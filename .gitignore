@@ -11,6 +11,9 @@
 /liat/
 /Content/
 
+# Noga's style guide + writing reference samples (like references/writing/ for Yael)
+/noga/
+
 # Node
 node_modules/
 

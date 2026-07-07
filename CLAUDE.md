@@ -9,20 +9,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **יובל (Yuval)** — a paid-ad creative generator. Accepts a brief (Hebrew or English), selects smart platform/aspect-ratio defaults, and calls **Nano Banana 2** (`gemini-3.1-flash-image-preview` via `@google/genai`) to produce 2K production-ready ad images saved to `output/`.
 - **יעל (Yael)** — a marketing content writer. Accepts a brief and produces ready-to-publish copy (LinkedIn posts, newsletters, ad copy, landing pages) saved as `.md` files to `output/`. When the brief needs a visual, Yael automatically dispatches Yuval and returns a complete `copy + creative` package.
 - **ליאת (Liat)** — the team's web researcher. Given a topic from Roi, she checks her own search memory to avoid duplicate work, searches the live web, filters to high-quality sourced results, and saves the chosen source to `Content/` for a future content-writer agent to work from. She has no shell/API access and never dispatches other agents herself — she only reports back to Roi. Persona: [`.claude/agents/liat.md`](.claude/agents/liat.md).
-- **נגה (Noga)** — *(not yet built)* the team's content rewriter; will take Liat's raw research and rewrite it in our voice for publishing.
+- **נגה (Noga)** — the team's content rewriter. Takes raw articles from `Content/` (Liat's research) and rewrites them in our voice, guided by `noga/style-guide.md` and writing samples in `noga/reference/` when they exist. Saves both a `.md` and a nicely styled `.html` version to `output/`. No shell/web/API access and never dispatches other agents — she reports back to Roi and flags whether the piece would benefit from visuals. Persona: [`.claude/agents/noga.md`](.claude/agents/noga.md).
 - **מירב (Merav)** — *(not yet built)* the team's visual generator for content pieces; will be dispatched when a content piece needs images.
 
 ### Team roster & trigger keywords
 
-Roi uses this table (rule-based, not free-form guessing) to decide who to dispatch. Yuval/Yael keywords below are inferred from their descriptions above (not yet formally confirmed); Liat's are as specified when she was built. Noga/Merav have no trigger keywords yet since those agents don't exist.
+Roi uses this table (rule-based, not free-form guessing) to decide who to dispatch. Yuval/Yael keywords below are inferred from their descriptions above (not yet formally confirmed); Liat's and Noga's are as specified when they were built. Merav has no trigger keywords yet since that agent doesn't exist.
 
 | Employee | Slug | Domain | Hebrew triggers | English triggers |
 |---|---|---|---|---|
 | יובל (Yuval) | `yuval` | Paid-ad creative / image generation | תמונה, קריאייטיב, פרסומת, באנר, מודעה ויזואלית | image, ad creative, banner, visual ad |
 | יעל (Yael) | `yael` | Marketing copywriting | פוסט, ניוזלטר, מודעה, תוכן שיווקי, טקסט לפרסום | post, newsletter, ad copy, marketing content, landing page |
 | ליאת (Liat) | `liat` | Web research — finding quality, current, sourced content | חפש, מצא, מחקר, מאמר על, חדש על, מה קורה עם, מקור על | search, find, research, article about, latest on, news on |
-| נגה (Noga) | `noga` | Content rewriting in our voice *(agent not yet built)* | — | — |
+| נגה (Noga) | `noga` | Rewriting/editing content in our voice | שכתב, ערוך, נסח מחדש, תרגם, סכם, מאמר, תוכן, פוסט | rewrite, edit, rephrase, translate, summarize, article, content, post |
 | מירב (Merav) | `merav` | Visual generation for content pieces *(agent not yet built)* | — | — |
+
+Note: Yael's and Noga's Hebrew triggers both include "פוסט"/"תוכן"-adjacent words — when a request is ambiguous between "write new ad copy" (Yael) vs. "rewrite/edit existing content" (Noga), Roi should look at whether there's a source article involved (Noga) or a brief for something new (Yael), and ask for clarification if still unclear rather than guessing.
 
 ### New content pipeline (research → rewrite → visual)
 
@@ -36,6 +38,8 @@ When a request is about creating new content sourced from the internet:
    - Roi combines everything into `output/`.
 4. If the request was only **"find me an article"** — Roi stops after Liat and returns her findings to the user.
 
+Noga can also be dispatched directly (without Liat) whenever the request is to rewrite/edit/translate/summarize an article or piece of content that's already available — she doesn't strictly require Liat to have run first.
+
 ## Setup
 
 ```bash
@@ -46,6 +50,8 @@ cp .env.example .env   # then add GEMINI_API_KEY
 Place 2–6 brand/style reference images (`.png`, `.jpg`, `.jpeg`, `.webp`) in `references/` — they are automatically passed as style context to every Yuval generation call.
 
 For Yael, place 2–6 writing samples (`.md`, `.txt`) in `references/writing/` — she loads them to match your tone of voice.
+
+For Noga, place your style guide at `noga/style-guide.md` and writing samples in `noga/reference/` — she loads both at the start of every task (if they exist) to rewrite content in our voice.
 
 ## Running
 
@@ -75,15 +81,18 @@ node scripts/generate.mjs \
 | `.claude/agents/yuval.md` | Yuval subagent persona — orchestrates brief → prompt expansion → `generate.mjs` invocation → returns output path |
 | `.claude/agents/yael.md` | Yael subagent persona — orchestrates brief → tone loading → copy writing → optional Yuval dispatch → returns `.md` + optional `.png` |
 | `.claude/agents/liat.md` | Liat subagent persona — checks search memory → searches the web → filters by quality → saves source to `Content/` → logs to `liat/Memory/searches.md` → reports to Roi |
+| `.claude/agents/noga.md` | Noga subagent persona — reads style guide/reference → rewrites article from `Content/` → saves `.md` + `.html` to `output/` → reports to Roi (flags if visuals are recommended) |
 | `.claude/commands/yuval.md` | `/yuval` slash command — forwards `$ARGUMENTS` to the yuval subagent |
 | `.claude/commands/yael.md` | `/yael` slash command — forwards `$ARGUMENTS` to the yael subagent |
 | `.claude/skills/nano-banana-maker.md` | Supporting skill for Yuval — Hebrew text rendering discipline for Nano Banana 2 |
 | `.claude/skills/content-craft.md` | Supporting skill for Yael — format-specific output structures, quality checklist, golden rules |
 | `references/` | Visual style references (Yuval); not committed |
 | `references/writing/` | Writing tone references for Yael (`.md` / `.txt`); not committed |
-| `output/` | All generated artifacts — PNGs `<YYYYMMDD-HHMM>-<slug>-<n>.png` (Yuval) and `.md` `<YYYYMMDD-HHMM>-<slug>.md` (Yael); gitignored |
+| `output/` | All generated artifacts — PNGs `<YYYYMMDD-HHMM>-<slug>-<n>.png` (Yuval), `.md` `<YYYYMMDD-HHMM>-<slug>.md` (Yael), and `.md`+`.html` pairs matching the source filename (Noga); gitignored |
 | `liat/Memory/searches.md` | Liat's search log — checked before every new search to avoid duplicate research within 30 days; not committed |
 | `Content/` | Raw research sources Liat saves for Noga to rewrite, `<YYYY-MM-DD>-<slug>.md`; not committed |
+| `noga/style-guide.md` | Noga's writing style guide (may not exist yet — she falls back to a clear, professional default and flags it if missing); not committed |
+| `noga/reference/` | Example texts in our writing voice, for Noga to match; not committed |
 
 ## Key Behaviour Details
 
@@ -94,3 +103,4 @@ node scripts/generate.mjs \
 - **Yael agent workflow**: (1) glob `references/writing/` for tone samples, (2) decode brief → pick format/tone/goal, (3) write full copy + variants following `content-craft.md`, (4) save `.md` to `output/`, (5) if visual is needed — build design brief and dispatch `yuval` via the Agent tool, (6) return copy + image paths + decision summary.
 - **Product separation**: Yael owns strategy + words; Yuval owns visual + execution. Yael passes Yuval exact verbatim headline/CTA text — never "something similar".
 - **Liat agent workflow**: (1) receive topic/keywords from Roi, (2) Grep `liat/Memory/searches.md` for a similar search in the last 30 days — if found, ask Roi whether to reuse or re-search, (3) `WebSearch` + `WebFetch` the most promising sources, (4) filter by the quality criteria in `.claude/agents/liat.md` and pick the best one, (5) save it to `Content/<YYYY-MM-DD>-<slug>.md` with the source link at the top, (6) log the search in `liat/Memory/searches.md`, (7) report the filename, a 1–2 sentence summary, and the source link back to Roi. Liat never calls Noga or any other agent directly.
+- **Noga agent workflow**: (1) pull an article from `Content/`, (2) read `noga/style-guide.md` and `noga/reference/` if not already read this session (fall back to a clear professional default if they don't exist yet), (3) rewrite the piece in our voice — stripping any links/CTAs/self-promotion pointing back to the original author's blog or newsletter, while keeping organic brand mentions inside the story itself, (4) save `<original-name>.md` and a styled `<original-name>.html` (inline `<style>`, no external build tooling) to `output/`, (5) report a short summary back to Roi, explicitly flagging whether the piece would benefit from visuals. Noga never calls Merav or any other agent directly — that's Roi's call.
