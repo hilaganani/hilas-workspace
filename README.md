@@ -6,7 +6,7 @@
 4. לרשום פרומפט מפורט - פרומפט לדוגמא
 5. לעדכן את הCEO
 
-6. YUVAL:
+6. עובד חדש (לדוגמה):
 7. לייצר AGENT.MD
 8. לייצר SKILL.MD:
 
@@ -31,7 +31,7 @@ curl -X POST "https://api.openai.com/v1/images/generations" \
 
 5. לעדכן את הCEO
 
-6. YAEL:
+6. עובד חדש נוסף (לדוגמה):
 7. לייצר AGENT.MD
 8. לייצר SKILL.MD
 9. לייצר תיקיות רלוונטיות

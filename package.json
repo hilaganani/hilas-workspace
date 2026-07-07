@@ -1,8 +1,8 @@
 {
-  "name": "creative-agent-yuval",
+  "name": "creative-agent-workspace",
   "version": "1.0.0",
   "type": "module",
-  "description": "Yuval - UX/UI designer agent powered by Nano Banana (Gemini 2.5 Flash Image)",
+  "description": "CreativeAgent workspace - Roi (CEO) orchestrates a content team; Merav generates content images via Nano Banana 2 (Gemini)",
   "scripts": {
     "generate": "node scripts/generate.mjs"
   },

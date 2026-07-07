@@ -4,14 +4,14 @@
 # Generated artifacts (per CLAUDE.md convention)
 /output/
 
-# Personal brand/writing references (per CLAUDE.md convention)
+# Merav's brand/style image references (per CLAUDE.md convention)
 /references/
 
 # Liat's research working data (search memory + saved sources)
 /liat/
 /Content/
 
-# Noga's style guide + writing reference samples (like references/writing/ for Yael)
+# Noga's style guide + writing reference samples (personal/local, not committed)
 /noga/
 
 # Node
