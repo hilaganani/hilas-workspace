@@ -1,0 +1,13 @@
+{
+  "name": "creative-agent-yuval",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Yuval - UX/UI designer agent powered by Nano Banana (Gemini 2.5 Flash Image)",
+  "scripts": {
+    "generate": "node scripts/generate.mjs"
+  },
+  "dependencies": {
+    "@google/genai": "^0.7.0",
+    "dotenv": "^16.4.5"
+  }
+}

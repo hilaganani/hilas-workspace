@@ -1,0 +1,14 @@
+# Secrets
+.env
+
+# Generated artifacts (per CLAUDE.md convention)
+output/
+
+# Personal brand/writing references (per CLAUDE.md convention)
+references/
+
+# Node
+node_modules/
+
+# Local machine-specific Claude Code settings
+.claude/settings.local.json
