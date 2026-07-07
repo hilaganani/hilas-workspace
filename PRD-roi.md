@@ -76,7 +76,7 @@
 |---|-----------|--------------|-------------------------------|----------------------|
 | 1 | `liat` | מחקר טרנדים ומאמרים בנושאי שיווק ואוטומציות, מחקרי עומק | חפש, מצא, מחקר, מגמות, מאמר על, חדש על, מה קורה עם, מקור על, שיווק, אוטומציות / search, find, research, trends, article about, latest on, news on, marketing, automation | ללא (מדווחת לרועי בלבד, לא מפעילה עובדים אחרים) |
 | 2 | `noga` | כתיבת תוכן: ניוזלטרים, פוסטים לבלוג (כולל טבלה כשמתאים + תמונות), פוסטים לסושיאל (לינקדאין, פייסבוק/אינסטגרם, טיקטוק) | שכתב, ערוך, נסח מחדש, תרגם, סכם, מאמר, תוכן, פוסט, ניוזלטר, בלוג, סושיאל, לינקדאין, אינסטגרם, טיקטוק / rewrite, edit, rephrase, translate, summarize, article, content, post, newsletter, blog, social, linkedin, instagram, tiktok | יכולה לצרוך פלט של `liat` (קובץ ב-`Content/`), אך לא חייבת. לא מפעילה עובדים אחרים; מדווחת לרועי אילו תמונות נדרשות עבור `merav` |
-| 3 | `merav` | יצירת תמונות תוכן (Nano Banana 2 / Gemini) | תמונה, ויזואל, איור, עיצוב לתמונה / image, visual, illustration, graphic | מופעלת ע"י רועי, בד"כ לפי בריף שהעביר לו `noga` |
+| 3 | `merav` | יצירת תמונות תוכן (`gpt-image-2`, OpenAI) | תמונה של, ציור של, תיצור תמונה, איור / image of, picture of, generate image, illustration, draw | מופעלת ע"י רועי לפי ה-`{{IMAGE_NEEDED}}` placeholders שהשאירה `noga` |
 | 4 | `yael` | יועצת אסטרטגית לשירותים ולשיווק של העסק *(טרם נבנה)* | `TBD` | `TBD` |
 | 5 | `bar` | שיווק בלינקדאין *(טרם נבנה)* | `TBD` | `TBD` |
 | 6 | `gefen` | שיווק באינסטגרם *(טרם נבנה)* | `TBD` | `TBD` |
@@ -139,7 +139,7 @@
 | `.claude/agents/liat.md` | פרסונת סוכנת ליאת — מחקר טרנדים בשיווק/אוטומציות (מוגדרת ופעילה) |
 | `.claude/agents/noga.md` | פרסונת סוכנת נגה — כותבת התוכן (מוגדרת ופעילה, scope מורחב) |
 | `.claude/agents/merav.md` | פרסונת סוכנת מירב — יצירת תמונות תוכן (מוגדרת ופעילה) |
-| `scripts/generate.mjs` | מנוע היצירה של מירב — Nano Banana 2 / Gemini |
+| `.claude/skills/gpt-image-gen/SKILL.md` | סקיל עוטף לקריאת OpenAI Images API (`gpt-image-2`) — משמש את מירב |
 | `.claude/agents/<slug>.md` | *(עתידי)* פרסונת `yael`/`bar`/`gefen`/`dani`, כשיוגדרו במלואם |
 | `CLAUDE.md` | עודכן — מגדיר שרועי הוא הכניסה החובה לכל בקשה, כולל טבלת ניתוב וזרימת "תוכן חדש מהאינטרנט" |
 
@@ -163,7 +163,8 @@
 4. ~~עדכון `CLAUDE.md` כך שרועי יוגדר כנקודת כניסה חובה לכל בקשה בפרויקט~~ — **בוצע**.
 5. הגדרת `yael` (יועצת אסטרטגית), `bar`, `gefen`, `dani` במלואם (agent.md, trigger keywords) והשלמת טבלת הניתוב.
 6. `noga/style-guide.md` עדיין לא נכתב (המשתמשת ציינה שתיצור אותו בנפרד) — נגה כרגע פועלת עם ברירת מחדל וכותבת בדוח שלה שלא נמצא מדריך סגנון.
-7. ~~מחיקת יובל ויעל (המימוש המקורי)~~ — **בוצע**. `scripts/generate.mjs` נבנה מחדש עבור מירב; `package.json`/`.env` נשמרו ושונו לשמש אותה.
+7. ~~מחיקת יובל ויעל (המימוש המקורי)~~ — **בוצע**.
+8. ~~מנוע התמונות של מירב~~ — **שונה שוב**: הוחלף ממנוע Gemini/Nano Banana 2 מבוסס-Node (`scripts/generate.mjs`) לגישה מבוססת OpenAI `gpt-image-2` דרך סקיל `gpt-image-gen` (curl/Bash). `scripts/generate.mjs` ו-`package.json` נמחקו — אין יותר תלות ב-Node/npm בפרויקט. `GEMINI_API_KEY` הוחלף ב-`OPENAI_API_KEY` ב-`.env`/`.env.example`.
 
 ---
 
@@ -173,7 +174,9 @@
 |-------|----------------|
 | תפקידי הצוות | 7 עובדים מתוכננים; `liat`, `noga`, `merav` בנויים ופעילים; `yael` (תפקיד חדש), `bar`, `gefen`, `dani` עדיין TBD |
 | יובל ויעל (מימוש מקורי) | נמחקו לגמרי לפי בקשת המשתמשת |
-| מנוע התמונות של מירב | שימוש חוזר בתשתית Gemini/Nano Banana 2 שכבר תוכננה ליובל; `scripts/generate.mjs` נבנה מחדש, מירב מריצה אותו דרך Bash |
+| מנוע התמונות של מירב | OpenAI `gpt-image-2` דרך סקיל `gpt-image-gen` (curl/Bash) — לא Node/Gemini; `package.json`/`scripts/generate.mjs` נמחקו |
+| תיקיות עבודה של מירב | `merav/reference/` (סגנון) ו-`merav/outputs/` (תוצרים + prompt נלווה), לא בגיט — לא עוד `references/`/`output/` המשותפים |
+| חיבור נגה↔מירב | נגה משאירה placeholders `{{IMAGE_NEEDED: "..."}}` בטקסט; רועי מפעיל את מירב לפיהם ומשלב את התמונות בקבצים הסופיים |
 | נגה — טבלאות/גרפים | טבלאות Markdown/HTML בלבד; אין יכולת גרפים אמיתית (אין לה הרצת קוד) |
 | noga/ בגיט | לא — מוגדר ב-.gitignore, כמו references/writing/ שהיה קודם (עקבי עם ההחלטה על Content/ ו-liat/Memory/) |
 | לוגיקת ניתוב | כללים מוגדרים מראש (routing table) |

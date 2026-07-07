@@ -4,9 +4,6 @@
 # Generated artifacts (per CLAUDE.md convention)
 /output/
 
-# Merav's brand/style image references (per CLAUDE.md convention)
-/references/
-
 # Liat's research working data (search memory + saved sources)
 /liat/
 /Content/
@@ -14,7 +11,10 @@
 # Noga's style guide + writing reference samples (personal/local, not committed)
 /noga/
 
-# Node
+# Merav's working directory (style references + generated image outputs)
+/merav/
+
+# Node (kept in case a future employee needs it; nothing in the repo uses npm right now)
 node_modules/
 
 # Local machine-specific Claude Code settings
