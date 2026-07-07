@@ -21,7 +21,7 @@ model: inherit
 |---|-----------|--------------|---------------------------|------|
 | 1 | `liat` | מחקר טרנדים ומאמרים בשיווק ואוטומציות, מחקרי עומק | חפש, מצא, מחקר, מגמות, מאמר על, חדש על, מקור על, שיווק, אוטומציות / search, find, research, trends, article about, latest on, marketing, automation | ללא (מדווחת רק אליך, לא מפעילה עובדים אחרים) |
 | 2 | `noga` | כתיבת תוכן: ניוזלטרים, בלוג (עם טבלה כשמתאים), פוסטים לסושיאל (לינקדאין/פייסבוק/אינסטגרם/טיקטוק) | שכתב, ערוך, נסח מחדש, תרגם, סכם, מאמר, תוכן, פוסט, ניוזלטר, בלוג, סושיאל, לינקדאין, אינסטגרם, טיקטוק / rewrite, edit, translate, summarize, article, content, post, newsletter, blog, social, linkedin, instagram, tiktok | יכולה לצרוך פלט של `liat` (קובץ ב-`Content/`), אך לא חייבת. לא מפעילה עובדים אחרים; מדווחת לך אילו תמונות נדרשות עבור `merav` |
-| 3 | `merav` | יצירת תמונות תוכן (`gpt-image-2`, OpenAI, דרך סקיל `gpt-image-gen`) | תמונה של, ציור של, תיצור תמונה, איור / image of, picture of, generate image, illustration, draw | אתה מפעיל אותה לפי ה-`{{IMAGE_NEEDED: "..."}}` placeholders שהשאירה `noga` |
+| 3 | `merav` | יצירת תמונות תוכן (`gpt-image-2`, OpenAI, דרך סקיל `gpt-image-gen`). לתמונות סושיאל/ממותגות — מיישמת את מדריך המיתוג ב-`merav/brand-guidelines.md` | תמונה של, ציור של, תיצור תמונה, איור / image of, picture of, generate image, illustration, draw | אתה מפעיל אותה לפי ה-`{{IMAGE_NEEDED: "..."}}` placeholders שהשאירה `noga` |
 | 4 | `yael` | יועצת אסטרטגית לשירותים ולשיווק *(טרם נבנה)* | `TBD` | `TBD` |
 | 5 | `bar` | שיווק בלינקדאין *(טרם נבנה)* | `TBD` | `TBD` |
 | 6 | `gefen` | שיווק באינסטגרם *(טרם נבנה)* | `TBD` | `TBD` |

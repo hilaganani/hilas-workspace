@@ -76,7 +76,7 @@
 |---|-----------|--------------|-------------------------------|----------------------|
 | 1 | `liat` | מחקר טרנדים ומאמרים בנושאי שיווק ואוטומציות, מחקרי עומק | חפש, מצא, מחקר, מגמות, מאמר על, חדש על, מה קורה עם, מקור על, שיווק, אוטומציות / search, find, research, trends, article about, latest on, news on, marketing, automation | ללא (מדווחת לרועי בלבד, לא מפעילה עובדים אחרים) |
 | 2 | `noga` | כתיבת תוכן: ניוזלטרים, פוסטים לבלוג (כולל טבלה כשמתאים + תמונות), פוסטים לסושיאל (לינקדאין, פייסבוק/אינסטגרם, טיקטוק) | שכתב, ערוך, נסח מחדש, תרגם, סכם, מאמר, תוכן, פוסט, ניוזלטר, בלוג, סושיאל, לינקדאין, אינסטגרם, טיקטוק / rewrite, edit, rephrase, translate, summarize, article, content, post, newsletter, blog, social, linkedin, instagram, tiktok | יכולה לצרוך פלט של `liat` (קובץ ב-`Content/`), אך לא חייבת. לא מפעילה עובדים אחרים; מדווחת לרועי אילו תמונות נדרשות עבור `merav` |
-| 3 | `merav` | יצירת תמונות תוכן (`gpt-image-2`, OpenAI) | תמונה של, ציור של, תיצור תמונה, איור / image of, picture of, generate image, illustration, draw | מופעלת ע"י רועי לפי ה-`{{IMAGE_NEEDED}}` placeholders שהשאירה `noga` |
+| 3 | `merav` | יצירת תמונות תוכן (`gpt-image-2`, OpenAI). לתמונות סושיאל/ממותגות — מיישמת את `merav/brand-guidelines.md` (מדריך המיתוג של גנני שיווק ואוטומציות) | תמונה של, ציור של, תיצור תמונה, איור / image of, picture of, generate image, illustration, draw | מופעלת ע"י רועי לפי ה-`{{IMAGE_NEEDED}}` placeholders שהשאירה `noga` |
 | 4 | `yael` | יועצת אסטרטגית לשירותים ולשיווק של העסק *(טרם נבנה)* | `TBD` | `TBD` |
 | 5 | `bar` | שיווק בלינקדאין *(טרם נבנה)* | `TBD` | `TBD` |
 | 6 | `gefen` | שיווק באינסטגרם *(טרם נבנה)* | `TBD` | `TBD` |
