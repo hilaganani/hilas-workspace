@@ -2,14 +2,14 @@
 .env
 
 # Generated artifacts (per CLAUDE.md convention)
-output/
+/output/
 
 # Personal brand/writing references (per CLAUDE.md convention)
-references/
+/references/
 
 # Liat's research working data (search memory + saved sources)
-liat/
-Content/
+/liat/
+/Content/
 
 # Node
 node_modules/
