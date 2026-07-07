@@ -33,7 +33,41 @@ curl -s -X POST "https://api.openai.com/v1/images/generations" \
 
 מודלי GPT Image (בניגוד ל-DALL·E) **תמיד** מחזירים את התמונה כ-base64 ב-`data[0].b64_json` — אין צורך לציין `response_format`.
 
-## Fallback ב-Python (כש-jq לא מותקן — נפוץ ב-Git Bash על Windows)
+## Fallback #1 — PowerShell (מאומת עובד; מומלץ ב-Git Bash על Windows)
+
+⚠️ **חשוב, מתוך ניסיון בפועל:** על חלק ממחשבי Windows, `python3`/`python` הן רק "App Execution Alias" סתומות של Microsoft Store (מריצות רק כניסיון לפתוח את החנות) ולא Python אמיתי — גם אם `which python3` מוצא אותן ב-PATH. **בדקי בפועל לפני שאת סומכת על ה-fallback של Python** (סעיף הבא). אם יש ספק, ה-fallback הבא (PowerShell) מאומת עובד ונקרא ישירות מתוך Bash, גם ב-Git Bash:
+
+```bash
+curl -s -X POST "https://api.openai.com/v1/images/generations" \
+  -H "Authorization: Bearer $OPENAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-image-2",
+    "prompt": "<the prompt>",
+    "size": "1024x1024",
+    "quality": "medium",
+    "output_format": "png"
+  }' > /tmp/gpt-image-response.json
+
+powershell.exe -NoProfile -Command '
+$resp = Get-Content -Raw "<windows-path-to-tmp>\gpt-image-response.json" | ConvertFrom-Json
+if ($resp.error) { Write-Output "API ERROR:"; $resp.error | ConvertTo-Json; exit 1 }
+$bytes = [Convert]::FromBase64String($resp.data[0].b64_json)
+[System.IO.File]::WriteAllBytes("<windows-output-path>.png", $bytes)
+Write-Output "Size: $((Get-Item "<windows-output-path>.png").Length)"
+'
+```
+
+- ב-Git Bash, `/tmp` בדרך כלל ממופה ל-`C:\Users\<user>\AppData\Local\Temp` — תצטרכי את הנתיב בפורמט Windows (לא `/tmp/...`) בתוך פקודת ה-PowerShell.
+- זה **הוכח בפועל** (נבדק ב-2026-07-07): קריאה אמיתית ל-`gpt-image-2`, פענוח base64, ושמירת PNG תקין בגודל 808,203 בייטים — ראו `merav/outputs/2026-07-07-test-lightbulb-icon.png`.
+
+## Fallback #2 — Python (רק אם וידאת ש-Python אמיתי מותקן)
+
+```bash
+python3 --version   # ודאי שזו לא הודעת שגיאה/פתיחת Microsoft Store לפני שסומכים על זה
+```
+
+אם `python3 --version` מחזיר גרסה אמיתית (למשל `Python 3.11.4`):
 
 ```bash
 curl -s -X POST "https://api.openai.com/v1/images/generations" \
@@ -59,8 +93,6 @@ with open('<output-path>.png', 'wb') as out:
     out.write(base64.b64decode(b64))
 "
 ```
-
-(אם `python3` לא זמין, נסי `python`.)
 
 ## פרמטרים נתמכים (רלוונטיים ל-gpt-image-2)
 
