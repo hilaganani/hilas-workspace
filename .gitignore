@@ -7,6 +7,10 @@ output/
 # Personal brand/writing references (per CLAUDE.md convention)
 references/
 
+# Liat's research working data (search memory + saved sources)
+liat/
+Content/
+
 # Node
 node_modules/
 
