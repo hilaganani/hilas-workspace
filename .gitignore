@@ -14,6 +14,9 @@
 # Merav's working directory (style references + generated image outputs)
 /merav/
 
+# Dani's SEO output packages
+/dani/
+
 # Node (kept in case a future employee needs it; nothing in the repo uses npm right now)
 node_modules/
 
