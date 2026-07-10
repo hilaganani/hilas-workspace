@@ -20,6 +20,9 @@
 # Yael's strategy doc + monthly content plans
 /yael/
 
+# Gefen's profile-structure recommendations
+/gefen/
+
 # Node (kept in case a future employee needs it; nothing in the repo uses npm right now)
 node_modules/
 
