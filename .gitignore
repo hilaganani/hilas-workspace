@@ -28,3 +28,6 @@ node_modules/
 
 # Local machine-specific Claude Code settings
 .claude/settings.local.json
+
+# macOS folder metadata
+.DS_Store

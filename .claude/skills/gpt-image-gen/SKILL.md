@@ -1,6 +1,6 @@
 ---
 name: gpt-image-gen
-description: מעטפת (wrapper) לקריאת ה-OpenAI Images API עם מודל gpt-image-2, ליצירת תמונה מ-prompt טקסטואלי. משמש בעיקר את מירב (Merav), מייצרת התמונות של הצוות. דורש OPENAI_API_KEY מוגדר ב-.env.
+description: מעטפת (wrapper) לקריאת ה-OpenAI Images API עם מודל gpt-image-2, ליצירת תמונה מ-prompt טקסטואלי, וגם לעריכת/הרכבת תמונה מתמונת קלט (image edit — לשילוב תמונה אמיתית, כמו תמונה של המשתמשת, בתוך עיצוב חדש). משמש בעיקר את מירב (Merav), מייצרת התמונות של הצוות. דורש OPENAI_API_KEY מוגדר ב-.env.
 ---
 
 # gpt-image-gen — יצירת תמונה דרך OpenAI Images API
@@ -106,7 +106,31 @@ with open('<output-path>.png', 'wb') as out:
 | `n` | מספר תמונות (1-10) | 1 |
 | `background` | `transparent`, `opaque`, `auto` | `auto` (שימו לב: `transparent` לא נתמך במפורש עבור gpt-image-2 בחלק מהתצורות) |
 
+## עריכת תמונה עם תמונת קלט (image edit) — לשילוב תמונה אמיתית
+
+כשיש תמונת קלט אמיתית שצריך "להכניס" לתוך העיצוב (למשל תמונה של המשתמשת עצמה, כדי שהעיצוב ישלב את דמותה במקום איור גנרי) — לא משתמשים ב-`/v1/images/generations` (טקסט בלבד). משתמשים ב-endpoint אחר, `/v1/images/edits`, שמקבל גם קובץ/י תמונה וגם prompt טקסטואלי, ומחזיר תמונה חדשה שמבוססת על הקלט.
+
+⚠️ **ההבדל המרכזי**: זו קריאת `multipart/form-data` (עם `-F` ב-curl), **לא** JSON body כמו ב-generations.
+
+```bash
+curl -s -X POST "https://api.openai.com/v1/images/edits" \
+  -H "Authorization: Bearer $OPENAI_API_KEY" \
+  -F "model=gpt-image-2" \
+  -F "image[]=@<path-to-reference-photo>.png" \
+  -F "prompt=<the prompt — תארי במפורש מה לעשות עם התמונה: לשמור על הדמות/הפנים, אבל לשנות רקע/סגנון/תוספות גרפיות לפי הבריף>" \
+  -F "size=1024x1024" \
+  -F "quality=medium" \
+  | jq -r '.data[0].b64_json' | base64 --decode > "<output-path>.png"
+```
+
+- אפשר לצרף כמה תמונות קלט (למשל כמה זוויות/תמונות reference שונות) על ידי חזרה על `-F "image[]=@<path2>.png"` וכו'.
+- קבצי הקלט חייבים להיות `png`/`jpg`/`webp` (לא פורמטים אחרים).
+- תשובת ה-API באותו מבנה בדיוק כמו ב-generations (`data[0].b64_json`) — אותו קוד פענוח/שמירה.
+- אותם fallbacks (PowerShell/Python) מה-generations רלוונטיים לפענוח ה-base64 בתשובה, אך שימי לב שבניית הבקשה עצמה (multipart, לא JSON) שונה — אם ה-fallback ב-PowerShell/Python בונה את גוף הבקשה ולא רק מפענח תשובה קיימת, יש להתאים אותו לפורמט multipart (למשל עם `Invoke-RestMethod -Form` ב-PowerShell, או `requests` עם `files=` ב-Python) ולא להעתיק את קוד ה-JSON-body כמו שהוא.
+- אם אין תמונת קלט רלוונטית לבקשה — ממשיכים כרגיל עם `/v1/images/generations` (טקסט בלבד), לא כל בקשה דורשת edit.
+
 ## טיפול בשגיאות
 
 - **תגובת JSON ללא שדה `data`** → כמעט תמיד שגיאת API (מפתח לא תקין, לא עבר Organization Verification, פרמטר לא חוקי). הדפיסי את תוכן התגובה המלא כדי לאבחן — אל תניחי שהבעיה במודל.
 - **קובץ תמונה בגודל 0 בייטים** → סימן ש-`b64_json` היה ריק/null (למשל אם התגובה הייתה שגיאה ולא תמונה). בדקי את קובץ ה-JSON הגולמי של התגובה לפני שמדווחים על הצלחה.
+- **בקריאת edit ספציפית**: שגיאה שמזכירה פורמט/גודל קובץ קלט → ודאי שהתמונה היא `png`/`jpg`/`webp` בפועל (לא רק סיומת קובץ שגויה), ושה-`-F "image[]=@..."` מצביע על נתיב קיים ותקין.
