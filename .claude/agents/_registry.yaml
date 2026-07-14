@@ -1,0 +1,212 @@
+# Agent Registry — single source of truth for "which agents exist and what they can do."
+#
+# This file exists to close a duplication problem found during the orchestration
+# architecture review (see architecture/02-architecture-review.md §3 and
+# architecture/10-design-review-addendum.md §4): agent routing information used to
+# live redundantly in CLAUDE.md's roster table, roi.md's own persona prose, and
+# PRD-roi.md, with no single source of truth.
+#
+# Roi reads this file (via Read) when planning a workflow-config-driven run
+# (architecture/04-orchestrator-design.md) and when falling back to standalone
+# single-agent dispatch. It does not replace any agent's persona file — persona
+# files remain the source of truth for HOW an agent does its work; this file is
+# the source of truth for WHAT each agent accepts, produces, and depends on.
+#
+# Schema per agent, per architecture/11-agent-contract-and-registry.md §4:
+#   id, status, persona_path, domain, capabilities, accepted_inputs
+#     (required/optional/implicit), produced_outputs, typical_dependencies,
+#     required_tools, optional_integrations
+
+agents:
+  - id: roi
+    status: active
+    persona_path: .claude/agents/roi.md
+    domain: orchestration
+    capabilities:
+      - workflow planning and dispatch
+      - multi-agent result synthesis
+    accepted_inputs:
+      required: [user_request]
+      optional: []
+      implicit: [.claude/agents/_registry.yaml, .claude/workflows/*.yaml]
+    produced_outputs:
+      - unified report to user (no domain artifacts of its own)
+    typical_dependencies: []
+    required_tools: [Agent, Read, Glob, Grep, Write, TaskCreate, TaskUpdate, TaskList, TaskGet]
+    optional_integrations: []
+
+  - id: liat
+    status: active
+    persona_path: .claude/agents/liat.md
+    domain: trend research (marketing & automation)
+    capabilities:
+      - live web research
+      - source quality filtering
+      - 30-day dedup memory
+    accepted_inputs:
+      required: [topic_or_keywords]
+      optional: []
+      implicit: [liat/Memory/searches.md]
+    produced_outputs:
+      - path: "Content/<YYYY-MM-DD>-<slug>.md"
+        type: final
+    typical_dependencies: []
+    required_tools: [WebSearch, WebFetch, Read, Write, Edit, Glob, Grep]
+    optional_integrations: []
+
+  - id: noga
+    status: active
+    persona_path: .claude/agents/noga.md
+    domain: content writing
+    capabilities:
+      - newsletter/blog/social copywriting
+      - rewriting from a source article
+      - smoove-newsletter (draft-only campaign creation)
+    accepted_inputs:
+      required: [source_file_or_direct_brief]
+      optional: [liat_research_file, seo_pre_write_brief, instagram_tactical_brief]
+      implicit: [noga/style-guide.md, noga/reference/]
+    produced_outputs:
+      - path: "output/<name>.md"
+        type: final
+      - path: "output/<name>.html"
+        type: final
+      - path: "Smoove draft campaign (external)"
+        type: final
+        note: "separate step, on explicit request only, never sent"
+    typical_dependencies: [liat, dani]
+    required_tools: [Read, Write, Edit, Glob, Grep, Bash]
+    tool_scope_notes:
+      Bash: "scoped to smoove-newsletter skill only, separate step from writing"
+    optional_integrations:
+      - name: smoove
+        env: [SMOOVE_API_KEY, SMOOVE_LIST_ID]
+        degrades: "newsletter stays a local file only, no draft campaign created"
+
+  - id: merav
+    status: active
+    persona_path: .claude/agents/merav.md
+    domain: visual generation
+    capabilities:
+      - image generation (gpt-image-2)
+      - image editing (real photo / logo compositing)
+    accepted_inputs:
+      required: [image_brief]
+      optional: [brand_guidelines_applicability, source_photo_requirement]
+      implicit: [merav/reference/, merav/brand-guidelines.md]
+    produced_outputs:
+      - path: "merav/outputs/{carousels,stories,singles,blog,archive}/<YYYY-MM-DD>-<slug>.png"
+        type: final
+      - path: "merav/outputs/<YYYY-MM-DD>-<slug>.txt"
+        type: side
+        note: "prompt used, flat at outputs/ root"
+    typical_dependencies: [noga]
+    required_tools: [Read, Write, Bash, Glob]
+    tool_scope_notes:
+      Bash: "scoped to gpt-image-gen skill only"
+    optional_integrations: []
+
+  - id: dani
+    status: active
+    persona_path: .claude/agents/dani.md
+    domain: SEO
+    capabilities:
+      - seo-keyword-research
+      - seo-serp-analysis
+      - seo-content-brief
+      - seo-on-page-audit
+      - seo-internal-linking
+      - seo-technical-audit
+      - seo-content-refresh
+      - seo-competitor-analysis
+      - seo-content-planning
+      - seo-strategy-advisor
+      - google-search-console (optional data upgrade)
+      - airtable publish-log (create-only)
+    accepted_inputs:
+      required: [topic_or_brief_pre_write, OR_finished_draft_post_write]
+      optional: [liat_research_file, pre_write_brief_for_comparison]
+      implicit: []
+    produced_outputs:
+      - path: "dani/outputs/<name>-seo.md"
+        type: final
+      - path: "dani/outputs/{technical-audits,content-refresh,competitor-analyses,content-planning,strategy}/<YYYY-MM-DD>-<slug>.md"
+        type: final
+      - path: "Airtable record (existing-content table)"
+        type: final
+        note: "create-only, publish-report trigger only"
+    typical_dependencies: [noga]
+    required_tools: [WebSearch, WebFetch, Read, Write, Edit, Glob, Grep, Bash]
+    tool_scope_notes:
+      Bash: "scoped to exactly five uses — airtable-read, airtable-write (publish-log only), readability_he.py, optional PageSpeed curl, optional gsc_query.py"
+    optional_integrations:
+      - name: pagespeed
+        env: [PAGESPEED_API_KEY]
+        degrades: "Core Web Vitals section skipped in seo-technical-audit, reported as such"
+      - name: google_search_console
+        env: [GOOGLE_SEARCH_CONSOLE_KEY_FILE, GOOGLE_SEARCH_CONSOLE_SITE_URL]
+        degrades: "seo-content-refresh and seo-technical-audit stay in inference-based degraded mode"
+
+  - id: yael
+    status: active
+    persona_path: .claude/agents/yael.md
+    domain: strategic advisor
+    capabilities:
+      - monthly content planning
+      - strategic-fit gate for new topics
+    accepted_inputs:
+      required: [period_to_plan, OR_topic_to_gate]
+      optional: []
+      implicit: [yael/strategy.md]
+    produced_outputs:
+      - path: "yael/outputs/<YYYY-MM>-content-plan.md"
+        type: final
+      - path: "yael/outputs/<YYYY-MM>-content-plan.docx"
+        type: final
+      - gate_verdict: [fits, needs_adjustment, new_strategic_move]
+        type: domain_verdict
+        note: "no file — a decision, not an artifact"
+    typical_dependencies: []
+    required_tools: [Read, Write, Edit, Glob, Grep, Bash]
+    tool_scope_notes:
+      Bash: "scoped to airtable-read (read-only) and docx-export only"
+    optional_integrations: []
+
+  - id: gefen
+    status: active
+    persona_path: .claude/agents/gefen.md
+    domain: Instagram marketing
+    capabilities:
+      - profile-structure recommendations
+      - per-post tactical brief/review
+    accepted_inputs:
+      required: [post_topic_or_brief, OR_explicit_profile_structure_request]
+      optional: [current_strategic_priority_from_yael]
+      implicit: [yael/strategy.md, yael/outputs/]
+    produced_outputs:
+      - path: "gefen/outputs/<YYYY-MM-DD>-<slug>-profile-structure.md"
+        type: final
+        note: "profile-structure mode only"
+      - verbal_brief_or_review:
+        type: final
+        note: "per-post mode — never saved to a file, by design"
+    typical_dependencies: []
+    required_tools: [WebSearch, WebFetch, Read, Write, Edit, Glob, Grep]
+    optional_integrations: []
+
+  - id: bar
+    status: planned
+    persona_path: null
+    domain: LinkedIn marketing
+    capabilities: []
+    accepted_inputs: {}
+    produced_outputs: []
+    typical_dependencies: []
+    required_tools: []
+    optional_integrations: []
+    note: >
+      Not built. architecture/07-agent-review.md §3 recommends against building
+      this as a standing agent — LinkedIn publishing+analytics should become a
+      shared tool/skill Noga and Dani can both call, not a 7th persona. Kept as a
+      registry entry (status: planned) rather than removed, so Roi's fallback
+      "TBD — stop and report" behavior (roi.md) continues to work unchanged.

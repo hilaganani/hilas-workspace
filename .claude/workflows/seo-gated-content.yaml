@@ -1,0 +1,79 @@
+# Pilot workflow — see architecture/09-implementation-roadmap.md §6 Phase A.
+# Chosen as the pilot because it's the most structurally complex cataloged workflow
+# (architecture/03-workflow-catalog.md, W3): a two-pass same-agent dependency (Dani
+# runs twice), a real gate (Yael), and a fan-out (Merav). Validating this one first
+# validates the hardest case before any simpler workflow is migrated.
+
+id: seo-gated-content
+workflow:
+  name: seo-gated-content
+  version: 1.0.0
+  last_updated: 2026-07-14
+description: >
+  Blog/website or LinkedIn content where organic search matters: SEO research
+  folds into the brief before writing, SEO review happens after. Not for
+  Facebook/Instagram/TikTok content — see instagram-content workflow (not yet
+  migrated) or the standalone fallback routing for those.
+
+trigger:
+  content_type: [blog, website, linkedin]
+  keywords_he: [SEO, קידום אתרים, מאמר, בלוג, כתבה לאתר]
+  keywords_en: [seo, article, blog post, linkedin article]
+
+deliverables:
+  - noga_draft            # output/*.md + *.html
+  - dani_seo_package       # dani/outputs/<name>-seo.md
+  - merav_images           # conditional on needs_images
+
+steps:
+  - id: strategic_gate
+    agent: yael
+    type: gate
+    run_if: is_new_topic       # false for a plain rewrite/edit/translate/summarize — see roi.md's existing "חיבור יעל↔הצוות" rule, unchanged by this workflow
+    retry:
+      max_attempts: 1
+      on: [tool_error]
+
+  - id: dani_pre_write
+    agent: dani
+    depends_on: [strategic_gate]
+    run_if: "strategic_gate == fits"   # a needs_adjustment/new_strategic_move verdict halts here and surfaces to the user — never silently proceeds or silently blocks
+    retry:
+      max_attempts: 2
+      on: [tool_error, empty_output]
+
+  - id: noga_write
+    agent: noga
+    depends_on: [dani_pre_write]
+    inputs_from: [dani_pre_write]
+    retry:
+      max_attempts: 1
+      on: [tool_error]
+
+  - id: dani_post_review
+    agent: dani
+    depends_on: [noga_write]
+    inputs_from: [noga_write, dani_pre_write]
+    retry:
+      max_attempts: 1
+      on: [tool_error]
+
+  - id: merav_images
+    agent: merav
+    depends_on: [noga_write]
+    inputs_from: [noga_write]
+    run_if: needs_images        # resolved from the count of {{IMAGE_NEEDED}} placeholders in Noga's draft, not a user-supplied flag
+    fan_out: per_placeholder
+    retry:
+      max_attempts: 1
+      on: [tool_error]
+
+  - id: combine
+    type: synthesis
+    depends_on: [dani_post_review, merav_images]
+    inputs_from: [noga_write, dani_post_review, merav_images]
+
+completion_criteria:
+  - dani_post_review's SEO package references the final draft, not a stale pre-write version
+  - every {{IMAGE_NEEDED}} placeholder is either resolved to a real image or explicitly reported as unresolved
+  - the combined output/<slug>.md + .html files exist with placeholders replaced
