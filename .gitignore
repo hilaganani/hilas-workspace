@@ -1,5 +1,6 @@
 # Secrets
 .env
+/credentials/
 
 # Generated artifacts (per CLAUDE.md convention)
 /output/
