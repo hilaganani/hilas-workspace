@@ -1,0 +1,8 @@
+{
+  "name": "brand-renderer",
+  "private": true,
+  "description": "Generic skill: renders real brand text (Heebo/Assistant) over an existing concept image via HTML/CSS + Playwright.",
+  "dependencies": {
+    "playwright": "^1.48.0"
+  }
+}

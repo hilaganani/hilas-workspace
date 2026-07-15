@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>{{FONT_FACES}}</style>
+<style>{{TOKENS_CSS}}</style>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: {{WIDTH}}px; height: {{HEIGHT}}px; overflow: hidden; }
+  body {
+    position: relative;
+    direction: rtl;
+    background-image: url("{{BACKGROUND}}");
+    background-size: cover;
+    background-position: center;
+  }
+  .scrim {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top,
+      rgba(45,30,84,0.92) 0%,
+      rgba(45,30,84,0.72) 32%,
+      rgba(45,30,84,0.25) 58%,
+      rgba(45,30,84,0.15) 100%);
+  }
+  .content {
+    position: absolute; z-index: 2;
+    left: 0; right: 0; bottom: 8%;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+    padding: 0 9%;
+    gap: 4%;
+  }
+  .headline {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: {{HEADLINE_SIZE}}px;
+    line-height: 1.28;
+    color: var(--white);
+    text-wrap: balance;
+  }
+  .caption {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: {{CAPTION_SIZE}}px;
+    color: var(--lavender);
+  }
+  .credit {
+    position: absolute; z-index: 2;
+    bottom: 4%; left: 0; right: 0;
+    text-align: center;
+    font-family: var(--font-body); font-weight: 700; font-size: {{CREDIT_SIZE}}px;
+    color: var(--white);
+  }
+</style>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="content">
+    <div class="headline">{{HEADLINE}}</div>
+    <div class="caption">{{CAPTION}}</div>
+  </div>
+  <div class="credit">{{CREDIT}}</div>
+</body>
+</html>

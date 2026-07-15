@@ -103,8 +103,8 @@ agents:
     typical_dependencies: [noga]
     required_tools: [Read, Write, Bash, Glob]
     tool_scope_notes:
-      Bash: "scoped to gpt-image-gen skill only"
-    optional_integrations: []
+      Bash: "scoped to gpt-image-gen and brand-renderer skills only"
+    optional_integrations: [brand-renderer]
 
   - id: dani
     status: active

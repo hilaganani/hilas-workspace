@@ -1,0 +1,20 @@
+{
+  "instagram_quote": {
+    "template": "instagram-quote.html",
+    "width": 1080,
+    "height": 1080,
+    "defaultSizes": { "headline": 58, "caption": 30, "credit": 22 }
+  },
+  "instagram_story": {
+    "template": "instagram-story.html",
+    "width": 1080,
+    "height": 1920,
+    "defaultSizes": { "headline": 78, "caption": 34, "credit": 26 }
+  },
+  "linkedin_banner": {
+    "template": "linkedin-banner.html",
+    "width": 1200,
+    "height": 627,
+    "defaultSizes": { "headline": 52, "caption": 26, "credit": 20 }
+  }
+}

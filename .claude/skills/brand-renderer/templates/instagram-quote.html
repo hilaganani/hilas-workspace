@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>{{FONT_FACES}}</style>
+<style>{{TOKENS_CSS}}</style>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: {{WIDTH}}px; height: {{HEIGHT}}px; overflow: hidden; }
+  body {
+    position: relative;
+    direction: rtl;
+    background-image: url("{{BACKGROUND}}");
+    background-size: cover;
+    background-position: center;
+  }
+  /* scrim so text stays legible over any concept image */
+  .scrim {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, rgba(247,243,253,0.94) 0%, rgba(247,243,253,0.86) 55%, rgba(247,243,253,0.7) 100%);
+  }
+  .content {
+    position: relative; z-index: 2;
+    height: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 0 8%;
+    text-align: center;
+    gap: 3%;
+  }
+  .headline {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: {{HEADLINE_SIZE}}px;
+    line-height: 1.32;
+    color: var(--purple-deep);
+    text-wrap: balance;
+    max-width: 80%;
+  }
+  .caption {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: {{CAPTION_SIZE}}px;
+    line-height: 1.5;
+    color: var(--muted);
+    max-width: 65%;
+  }
+  .credit {
+    position: absolute; bottom: 4%; right: 0; left: 0; z-index: 2;
+    text-align: center;
+    font-family: var(--font-body); font-weight: 700; font-size: {{CREDIT_SIZE}}px;
+    color: var(--purple-mid);
+  }
+</style>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="content">
+    <div class="headline">{{HEADLINE}}</div>
+    <div class="caption">{{CAPTION}}</div>
+  </div>
+  <div class="credit">{{CREDIT}}</div>
+</body>
+</html>
