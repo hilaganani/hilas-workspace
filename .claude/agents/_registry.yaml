@@ -154,10 +154,12 @@ agents:
     capabilities:
       - monthly content planning
       - strategic-fit gate for new topics
+      - plan-vs-actual item seeding (create-only, Airtable content calendar)
+      - plan-vs-actual insight synthesis for the next monthly plan
     accepted_inputs:
       required: [period_to_plan, OR_topic_to_gate]
       optional: []
-      implicit: [yael/strategy.md]
+      implicit: [yael/strategy.md, "תכנון תוכן חודשי Airtable table (history)"]
     produced_outputs:
       - path: "yael/outputs/<YYYY-MM>-content-plan.md"
         type: final
@@ -166,10 +168,13 @@ agents:
       - gate_verdict: [fits, needs_adjustment, new_strategic_move]
         type: domain_verdict
         note: "no file — a decision, not an artifact"
+      - airtable_rows: "one row per content item, status מתוכנן, in תכנון תוכן חודשי (tbl6S09qb9wK2ARW6)"
+        type: final
+        note: "create-only, via airtable-content-calendar — Yael never runs its update-items action"
     typical_dependencies: []
     required_tools: [Read, Write, Edit, Glob, Grep, Bash]
     tool_scope_notes:
-      Bash: "scoped to airtable-read (read-only) and docx-export only"
+      Bash: "scoped to airtable-read (read-only), docx-export, and airtable-content-calendar's create-items action only — never update-items"
     optional_integrations: []
 
   - id: gefen
