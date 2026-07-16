@@ -68,6 +68,64 @@ def build_update_fields(update):
     return fields
 
 
+def get_env():
+    api_key = os.environ.get("AIRTABLE_API_KEY")
+    base_id = os.environ.get("AIRTABLE_BASE_ID")
+    if not api_key or not base_id:
+        print(json.dumps({"error": "AIRTABLE_API_KEY ו/או AIRTABLE_BASE_ID לא מוגדרים ב-.env"}, ensure_ascii=False))
+        sys.exit(1)
+    return api_key, base_id
+
+
+def get_headers(api_key):
+    return {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+
+
+def cmd_create_items(args):
+    api_key, base_id = get_env()
+    with open(args.items_json, encoding="utf-8") as f:
+        items = json.load(f)
+
+    if not items:
+        print(json.dumps({"error": "רשימת הפריטים ריקה"}, ensure_ascii=False))
+        sys.exit(1)
+
+    try:
+        records = [{"fields": build_create_fields(item)} for item in items]
+    except (KeyError, ValueError) as e:
+        print(json.dumps({"error": str(e)}, ensure_ascii=False))
+        sys.exit(1)
+
+    created = []
+    for batch in chunked(records, BATCH_SIZE):
+        resp = requests.post(
+            f"{API_BASE}/{base_id}/{TABLE_ID}",
+            headers=get_headers(api_key),
+            json={"records": batch},
+            timeout=30,
+        )
+        if resp.status_code >= 400:
+            print(json.dumps(
+                {"error": "יצירת פריטים נכשלה", "status": resp.status_code, "body": resp.text, "created_so_far": len(created)},
+                ensure_ascii=False, indent=2,
+            ))
+            sys.exit(1)
+        created.extend(resp.json().get("records", []))
+
+    print(json.dumps({"created": len(created), "records": created}, ensure_ascii=False, indent=2))
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Airtable content-calendar create+restricted-update (תכנון תוכן חודשי)")
+    sub = parser.add_subparsers(dest="action", required=True)
+
+    p_create = sub.add_parser("create-items", help="create new planned rows (status always מתוכנן)")
+    p_create.add_argument("--items-json", required=True, help="JSON file: array of {week_or_date, channel, topic}")
+    p_create.set_defaults(func=cmd_create_items)
+
+    args = parser.parse_args()
+    args.func(args)
+
+
 if __name__ == "__main__":
-    print(json.dumps({"error": "CLI not implemented yet — see Task 2/3"}, ensure_ascii=False))
-    sys.exit(1)
+    main()

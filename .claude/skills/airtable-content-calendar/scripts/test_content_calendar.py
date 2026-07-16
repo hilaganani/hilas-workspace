@@ -1,4 +1,10 @@
+import contextlib
+import io
+import json
+import os
+import tempfile
 import unittest
+from unittest import mock
 
 from content_calendar import (
     ALLOWED_CHANNELS,
@@ -7,6 +13,7 @@ from content_calendar import (
     build_create_fields,
     build_update_fields,
     chunked,
+    cmd_create_items,
 )
 
 
@@ -79,6 +86,89 @@ class TestBuildUpdateFields(unittest.TestCase):
         for status in ALLOWED_STATUSES:
             fields = build_update_fields({"serial": 1, "status": status})
             self.assertEqual(fields["סטטוס"], status)
+
+
+class Args:
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
+
+class TestCmdCreateItems(unittest.TestCase):
+    def _write_items(self, items):
+        f = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False, encoding="utf-8")
+        json.dump(items, f)
+        f.close()
+        return f.name
+
+    @mock.patch.dict(os.environ, {"AIRTABLE_API_KEY": "key123", "AIRTABLE_BASE_ID": "appXYZ"})
+    @mock.patch("content_calendar.requests.post")
+    def test_creates_records_in_single_batch(self, mock_post):
+        items = [
+            {"week_or_date": "2026-07-14", "channel": "בלוג", "topic": "מאמר A"},
+            {"week_or_date": "2026-07-14", "channel": "טיקטוק", "topic": "וידאו B"},
+        ]
+        path = self._write_items(items)
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.json.return_value = {
+            "records": [{"id": "rec1"}, {"id": "rec2"}]
+        }
+
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            cmd_create_items(Args(items_json=path))
+
+        os.unlink(path)
+        self.assertEqual(mock_post.call_count, 1)
+        _, kwargs = mock_post.call_args
+        self.assertEqual(len(kwargs["json"]["records"]), 2)
+        output = json.loads(buf.getvalue())
+        self.assertEqual(output["created"], 2)
+
+    @mock.patch.dict(os.environ, {"AIRTABLE_API_KEY": "key123", "AIRTABLE_BASE_ID": "appXYZ"})
+    @mock.patch("content_calendar.requests.post")
+    def test_batches_in_groups_of_ten(self, mock_post):
+        items = [
+            {"week_or_date": "2026-07-14", "channel": "בלוג", "topic": f"מאמר {i}"}
+            for i in range(12)
+        ]
+        path = self._write_items(items)
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.json.side_effect = [
+            {"records": [{"id": f"rec{i}"} for i in range(10)]},
+            {"records": [{"id": "rec10"}, {"id": "rec11"}]},
+        ]
+
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            cmd_create_items(Args(items_json=path))
+
+        os.unlink(path)
+        self.assertEqual(mock_post.call_count, 2)
+        output = json.loads(buf.getvalue())
+        self.assertEqual(output["created"], 12)
+
+    @mock.patch.dict(os.environ, {}, clear=True)
+    def test_missing_env_exits_nonzero(self):
+        items = [{"week_or_date": "2026-07-14", "channel": "בלוג", "topic": "x"}]
+        path = self._write_items(items)
+        buf = io.StringIO()
+        with self.assertRaises(SystemExit) as ctx:
+            with contextlib.redirect_stdout(buf):
+                cmd_create_items(Args(items_json=path))
+        os.unlink(path)
+        self.assertNotEqual(ctx.exception.code, 0)
+
+    @mock.patch.dict(os.environ, {"AIRTABLE_API_KEY": "key123", "AIRTABLE_BASE_ID": "appXYZ"})
+    def test_unknown_channel_exits_nonzero_without_calling_api(self):
+        items = [{"week_or_date": "2026-07-14", "channel": "וואטסאפ", "topic": "x"}]
+        path = self._write_items(items)
+        buf = io.StringIO()
+        with mock.patch("content_calendar.requests.post") as mock_post:
+            with self.assertRaises(SystemExit):
+                with contextlib.redirect_stdout(buf):
+                    cmd_create_items(Args(items_json=path))
+            mock_post.assert_not_called()
+        os.unlink(path)
 
 
 if __name__ == "__main__":
