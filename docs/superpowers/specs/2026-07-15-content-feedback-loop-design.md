@@ -120,7 +120,7 @@
 ## 10. קבצים שדורשים עדכון (ליישום)
 
 - `.claude/skills/airtable-content-calendar/SKILL.md` — סקיל חדש (סעיף 6).
-- `.claude/agents/yael.md` — הוספת זרימות א' ו-ד' (זריעה + קריאת תובנות), ללא שינוי בכלים שלה (Bash שלה כבר מוגבל ל-`airtable-read`+`docx-export`; לא מקבלת גישת כתיבה ל-Airtable).
+- `.claude/agents/yael.md` — הוספת זרימות א' ו-ד' (זריעה + קריאת תובנות). כלי ה-`Bash` שלה מתרחב משני שימושים לשלושה: בנוסף ל-`airtable-read` (read-only) ו-`docx-export`, מקבלת יצירה בלבד (create-only, לעולם לא עדכון) של שורות חדשות בטבלת "תכנון תוכן חודשי" דרך `airtable-content-calendar` — ראו סעיף 6 וסעיף 7 (זרימה א') למעלה.
 - `.claude/agents/roi.md` — זיהוי תבנית התשובה הדו-שבועית ("1-פורסם, 2-שונה...") כטריגר, מיפוי למספרים סידוריים, הפעלת `claude` עם המיפוי.
 - `.claude/skills/airtable-read/SKILL.md` — עדכון תיאור השימוש בטבלת "תכנון תוכן חודשי" (מ"תכנון קיים לבדיקה" ל"מקור אמת פעיל לתכנון-מול-ביצוע").
 - משימה מתוזמנת חדשה `biweekly-content-feedback-email` (cron, אחת לשבועיים) — במתכונת `weekly-content-plan-email`.

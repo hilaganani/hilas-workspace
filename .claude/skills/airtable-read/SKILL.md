@@ -84,7 +84,7 @@ curl -s -G "https://api.airtable.com/v0/$AIRTABLE_BASE_ID/<TABLE_ID>" \
 
 ## שליפת פריטים ממתינים לעדכון סטטוס (לתזכורת הדו-שבועית)
 
-עבור המשימה המתוזמנת `biweekly-content-feedback-email` (ראו `CLAUDE.md`, "Feedback loop: plan vs. actual", ו-`.claude/agents/roi.md`) — שליפת כל הרשומות בטבלת "תכנון תוכן חודשי" שסטטוסן עדיין `מתוכנן` ותאריך היעד שלהן כבר עבר:
+עבור המשימה המתוזמנת `biweekly-content-feedback-email` (טרם נוצרה בפועל — ראו תוכנית היישום, משימה 11; ראו `CLAUDE.md`, "Feedback loop: plan vs. actual", ו-`.claude/agents/roi.md`) — שליפת כל הרשומות בטבלת "תכנון תוכן חודשי" שסטטוסן עדיין `מתוכנן` ותאריך היעד שלהן כבר עבר:
 
 ```bash
 today=$(date +%Y-%m-%d)
