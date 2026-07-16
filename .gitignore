@@ -32,3 +32,4 @@ node_modules/
 
 # macOS folder metadata
 .DS_Store
+.worktrees/
