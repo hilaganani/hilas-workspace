@@ -21,7 +21,7 @@ description: מעטפת (wrapper) לקריאה בלבד (read-only) מכל טב�
 |---|---|---|
 | מאגר תוכן קיים | `tbl1eG92lW0vsY0tc` | יעל: להימנע מכפילות נושאים. דני: לאתר מאמרים קיימים ולהציע קישורים פנימיים קונקרטיים בבריף המקדים ובסקירה הסופית |
 | מאגר תוכן - ניוזלטר | `tbl4SMIJjdjhdtkMl` | ארכיון ניוזלטרים שכבר נשלחו |
-| תכנון תוכן חודשי | `tbl6S09qb9wK2ARW6` | תוכנית/יומן תוכן חודשי קיים — לבדוק לפני בניית תוכנית חדשה |
+| תכנון תוכן חודשי | `tbl6S09qb9wK2ARW6` | **מקור האמת הפעיל ליומן תכנון-מול-ביצוע** (ראו CLAUDE.md, "Feedback loop: plan vs. actual") — לבדוק לפני בניית תוכנית חדשה, וגם לקרוא פריטים ממתינים לעדכון סטטוס (ראו סעיף "שליפת פריטים ממתינים לעדכון סטטוס" למטה). כתיבה/עדכון בטבלה הזו דרך `airtable-content-calendar` בלבד, לא דרך הסקיל הזה |
 | תוכנית כלכלית חדש | `tbl2qOR40DFJYMZF0` | רעיונות מוצרים דיגיטליים חיים (ראו גם `yael/strategy.md` סעיף 5) |
 | תוכנית כלכלית חודשית - ישן | `tbl0hcLngIcokpwwH` | גרסה ישנה — כנראה לא רלוונטי, לבדוק מול המשתמשת/רועי לפני הסתמכות |
 | תוכנית שיווקית | `tblHIqGsRbnpUYMtZ` | תוכנית שיווקית כללית |
@@ -81,6 +81,22 @@ curl -s -G "https://api.airtable.com/v0/$AIRTABLE_BASE_ID/<TABLE_ID>" \
 - **`401`/`403`** — כמעט תמיד `AIRTABLE_API_KEY` שגוי/פג תוקף, או שה-scope של ה-token לא כולל את הטבלה/הרשאת `data.records:read`. לא בעיה בשם/ID הטבלה.
 - **`404`** — `AIRTABLE_BASE_ID` או ה-Table ID שגויים, או שהטבלה נמחקה. רעננו את רשימת הטבלאות (Metadata API למעלה) לפני שמניחים תקלה אחרת.
 - **תגובת JSON בלי שדה `records`** — סימן לשגיאת API; הדפיסי את כל גוף התגובה כדי לאבחן במקום להניח.
+
+## שליפת פריטים ממתינים לעדכון סטטוס (לתזכורת הדו-שבועית)
+
+עבור המשימה המתוזמנת `biweekly-content-feedback-email` (ראו `CLAUDE.md`, "Feedback loop: plan vs. actual", ו-`.claude/agents/roi.md`) — שליפת כל הרשומות בטבלת "תכנון תוכן חודשי" שסטטוסן עדיין `מתוכנן` ותאריך היעד שלהן כבר עבר:
+
+```bash
+today=$(date +%Y-%m-%d)
+curl -s -G "https://api.airtable.com/v0/$AIRTABLE_BASE_ID/tbl6S09qb9wK2ARW6" \
+  --data-urlencode "filterByFormula=AND({סטטוס}='מתוכנן', IS_BEFORE({שבוע / תאריך יעד}, '$today'))" \
+  --data-urlencode "fields[]=מספר סידורי" \
+  --data-urlencode "fields[]=ערוץ" \
+  --data-urlencode "fields[]=נושא" \
+  -H "Authorization: Bearer $AIRTABLE_API_KEY" | jq '.records[] | {serial: .fields["מספר סידורי"], channel: .fields["ערוץ"], topic: .fields["נושא"]}'
+```
+
+אם התוצאה ריקה — אין פריטים ממתינים; המשימה המתוזמנת מדלגת על שליחת המייל בשקט (אין "בעיה" לדווח עליה).
 
 ## לא לשלוף הכל תמיד
 
