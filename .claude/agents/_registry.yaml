@@ -168,7 +168,7 @@ agents:
       - gate_verdict: [fits, needs_adjustment, new_strategic_move]
         type: domain_verdict
         note: "no file — a decision, not an artifact"
-      - airtable_rows: "one row per content item, status מתוכנן, in תכנון תוכן חודשי (tbl6S09qb9wK2ARW6)"
+      - airtable_rows: "one row per content item, status מתוכנן, in תכנון תוכן חודשי (tbl86pJ76WWc3moL2)"
         type: final
         note: "create-only, via airtable-content-calendar — Yael never runs its update-items action"
     typical_dependencies: []

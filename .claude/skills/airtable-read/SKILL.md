@@ -21,7 +21,7 @@ description: מעטפת (wrapper) לקריאה בלבד (read-only) מכל טב�
 |---|---|---|
 | מאגר תוכן קיים | `tbl1eG92lW0vsY0tc` | יעל: להימנע מכפילות נושאים. דני: לאתר מאמרים קיימים ולהציע קישורים פנימיים קונקרטיים בבריף המקדים ובסקירה הסופית |
 | מאגר תוכן - ניוזלטר | `tbl4SMIJjdjhdtkMl` | ארכיון ניוזלטרים שכבר נשלחו |
-| תכנון תוכן חודשי | `tbl6S09qb9wK2ARW6` | **מקור האמת הפעיל ליומן תכנון-מול-ביצוע** (ראו CLAUDE.md, "Feedback loop: plan vs. actual") — לבדוק לפני בניית תוכנית חדשה, וגם לקרוא פריטים ממתינים לעדכון סטטוס (ראו סעיף "שליפת פריטים ממתינים לעדכון סטטוס" למטה). כתיבה/עדכון בטבלה הזו דרך `airtable-content-calendar` בלבד, לא דרך הסקיל הזה |
+| תכנון תוכן חודשי | `tbl86pJ76WWc3moL2` | **מקור האמת הפעיל ליומן תכנון-מול-ביצוע** (ראו CLAUDE.md, "Feedback loop: plan vs. actual") — לבדוק לפני בניית תוכנית חדשה, וגם לקרוא פריטים ממתינים לעדכון סטטוס (ראו סעיף "שליפת פריטים ממתינים לעדכון סטטוס" למטה). כתיבה/עדכון בטבלה הזו דרך `airtable-content-calendar` בלבד, לא דרך הסקיל הזה |
 | תוכנית כלכלית חדש | `tbl2qOR40DFJYMZF0` | רעיונות מוצרים דיגיטליים חיים (ראו גם `yael/strategy.md` סעיף 5) |
 | תוכנית כלכלית חודשית - ישן | `tbl0hcLngIcokpwwH` | גרסה ישנה — כנראה לא רלוונטי, לבדוק מול המשתמשת/רועי לפני הסתמכות |
 | תוכנית שיווקית | `tblHIqGsRbnpUYMtZ` | תוכנית שיווקית כללית |
@@ -84,11 +84,11 @@ curl -s -G "https://api.airtable.com/v0/$AIRTABLE_BASE_ID/<TABLE_ID>" \
 
 ## שליפת פריטים ממתינים לעדכון סטטוס (לתזכורת הדו-שבועית)
 
-עבור המשימה המתוזמנת `biweekly-content-feedback-email` (טרם נוצרה בפועל — ראו תוכנית היישום, משימה 11; ראו `CLAUDE.md`, "Feedback loop: plan vs. actual", ו-`.claude/agents/roi.md`) — שליפת כל הרשומות בטבלת "תכנון תוכן חודשי" שסטטוסן עדיין `מתוכנן` ותאריך היעד שלהן כבר עבר:
+עבור המשימה המתוזמנת `biweekly-content-feedback-email` (ראו `CLAUDE.md`, "Feedback loop: plan vs. actual", ו-`.claude/agents/roi.md`) — שליפת כל הרשומות בטבלת "תכנון תוכן חודשי" שסטטוסן עדיין `מתוכנן` ותאריך היעד שלהן כבר עבר:
 
 ```bash
 today=$(date +%Y-%m-%d)
-curl -s -G "https://api.airtable.com/v0/$AIRTABLE_BASE_ID/tbl6S09qb9wK2ARW6" \
+curl -s -G "https://api.airtable.com/v0/$AIRTABLE_BASE_ID/tbl86pJ76WWc3moL2" \
   --data-urlencode "filterByFormula=AND({סטטוס}='מתוכנן', IS_BEFORE({שבוע / תאריך יעד}, '$today'))" \
   --data-urlencode "fields[]=מספר סידורי" \
   --data-urlencode "fields[]=ערוץ" \

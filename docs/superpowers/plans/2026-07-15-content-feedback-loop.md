@@ -1,5 +1,7 @@
 # Content Feedback Loop Implementation Plan
 
+> **Note (2026-07-16, during Task 10):** the "תכנון תוכן חודשי" table referenced throughout this plan as `tbl6S09qb9wK2ARW6` was found deleted/renamed beyond recognition when Task 10 began. It was recreated (6 of 7 fields via the Airtable MCP, Autonumber added manually) under a **new** Table ID, `tbl86pJ76WWc3moL2`. That new ID is what's actually live in the code and in every other doc (`content_calendar.py`, both SKILL.md files, `CLAUDE.md`, the design spec) — this plan's body below is left as the historical record of what was reviewed and executed, and still reads `tbl6S09qb9wK2ARW6` throughout; don't treat that as the current live ID.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Turn the existing, mostly-idle "תכנון תוכן חודשי" Airtable table into the single source of truth for plan-vs-actual content tracking, closing the loop between Yael's monthly plans and what Hila actually publishes/changes/skips — with minimal manual effort from Hila (one biweekly digest reply) and no new persona added to the team.

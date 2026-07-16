@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-יוצר ומעדכן רשומות בטבלת "תכנון תוכן חודשי" ב-Airtable (tbl6S09qb9wK2ARW6) -
+יוצר ומעדכן רשומות בטבלת "תכנון תוכן חודשי" ב-Airtable (tbl86pJ76WWc3moL2) -
 מקור האמת ליומן תכנון-מול-ביצוע (ראו CLAUDE.md, סעיף "Feedback loop: plan vs. actual").
 
 שתי פעולות בלבד, לפי עקרון הרשאות מינימליות:
@@ -30,7 +30,7 @@ except ImportError:
     print(json.dumps({"error": "חסרה חבילת requests. הריצו: pip3 install requests"}, ensure_ascii=False))
     sys.exit(1)
 
-TABLE_ID = "tbl6S09qb9wK2ARW6"  # תכנון תוכן חודשי
+TABLE_ID = "tbl86pJ76WWc3moL2"  # תכנון תוכן חודשי (נוצרה מחדש 2026-07-16, מזהה חדש)
 API_BASE = "https://api.airtable.com/v0"
 
 ALLOWED_CHANNELS = {"בלוג", "ניוזלטר", "לינקדאין", "פייסבוק/אינסטגרם", "טיקטוק"}
