@@ -115,6 +115,64 @@ def cmd_create_items(args):
     print(json.dumps({"created": len(created), "records": created}, ensure_ascii=False, indent=2))
 
 
+def find_record_by_serial(api_key, base_id, serial):
+    formula = f"{{מספר סידורי}} = {int(serial)}"
+    resp = requests.get(
+        f"{API_BASE}/{base_id}/{TABLE_ID}",
+        headers=get_headers(api_key),
+        params={"filterByFormula": formula, "maxRecords": 1},
+        timeout=30,
+    )
+    if resp.status_code >= 400:
+        raise RuntimeError(f"חיפוש רשומה #{serial} נכשל: {resp.status_code} {resp.text}")
+    records = resp.json().get("records", [])
+    return records[0]["id"] if records else None
+
+
+def cmd_update_items(args):
+    api_key, base_id = get_env()
+    with open(args.updates_json, encoding="utf-8") as f:
+        updates = json.load(f)
+
+    if not updates:
+        print(json.dumps({"error": "רשימת העדכונים ריקה"}, ensure_ascii=False))
+        sys.exit(1)
+
+    results = []
+    for update in updates:
+        serial = update["serial"]
+        try:
+            fields = build_update_fields(update)
+            record_id = find_record_by_serial(api_key, base_id, serial)
+        except (KeyError, ValueError, RuntimeError) as e:
+            results.append({"serial": serial, "error": str(e)})
+            continue
+
+        if record_id is None:
+            results.append({"serial": serial, "error": f"לא נמצאה רשומה עם מספר סידורי {serial}"})
+            continue
+
+        resp = requests.patch(
+            f"{API_BASE}/{base_id}/{TABLE_ID}/{record_id}",
+            headers=get_headers(api_key),
+            json={"fields": fields},
+            timeout=30,
+        )
+        if resp.status_code >= 400:
+            results.append({"serial": serial, "error": f"עדכון נכשל: {resp.status_code} {resp.text}"})
+            continue
+
+        results.append({"serial": serial, "updated": True, "record_id": record_id, "fields": fields})
+
+    failed = [r for r in results if "error" in r]
+    print(json.dumps(
+        {"results": results, "succeeded": len(results) - len(failed), "failed": len(failed)},
+        ensure_ascii=False, indent=2,
+    ))
+    if failed:
+        sys.exit(1)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Airtable content-calendar create+restricted-update (תכנון תוכן חודשי)")
     sub = parser.add_subparsers(dest="action", required=True)
@@ -122,6 +180,10 @@ def main():
     p_create = sub.add_parser("create-items", help="create new planned rows (status always מתוכנן)")
     p_create.add_argument("--items-json", required=True, help="JSON file: array of {week_or_date, channel, topic}")
     p_create.set_defaults(func=cmd_create_items)
+
+    p_update = sub.add_parser("update-items", help="update status/note/final_link only, by מספר סידורי")
+    p_update.add_argument("--updates-json", required=True, help="JSON file: array of {serial, status, note?, final_link?}")
+    p_update.set_defaults(func=cmd_update_items)
 
     args = parser.parse_args()
     args.func(args)

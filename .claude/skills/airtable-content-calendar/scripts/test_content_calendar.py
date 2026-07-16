@@ -14,6 +14,8 @@ from content_calendar import (
     build_update_fields,
     chunked,
     cmd_create_items,
+    find_record_by_serial,
+    cmd_update_items,
 )
 
 
@@ -169,6 +171,120 @@ class TestCmdCreateItems(unittest.TestCase):
                     cmd_create_items(Args(items_json=path))
             mock_post.assert_not_called()
         os.unlink(path)
+
+
+class TestFindRecordBySerial(unittest.TestCase):
+    @mock.patch.dict(os.environ, {"AIRTABLE_API_KEY": "key123", "AIRTABLE_BASE_ID": "appXYZ"})
+    @mock.patch("content_calendar.requests.get")
+    def test_returns_record_id_when_found(self, mock_get):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {"records": [{"id": "recABC"}]}
+
+        result = find_record_by_serial("key123", "appXYZ", 5)
+
+        self.assertEqual(result, "recABC")
+        _, kwargs = mock_get.call_args
+        self.assertIn("מספר סידורי", kwargs["params"]["filterByFormula"])
+        self.assertIn("5", kwargs["params"]["filterByFormula"])
+
+    @mock.patch("content_calendar.requests.get")
+    def test_returns_none_when_not_found(self, mock_get):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = {"records": []}
+
+        result = find_record_by_serial("key123", "appXYZ", 999)
+
+        self.assertIsNone(result)
+
+    @mock.patch("content_calendar.requests.get")
+    def test_raises_on_api_error(self, mock_get):
+        mock_get.return_value.status_code = 500
+        mock_get.return_value.text = "server error"
+
+        with self.assertRaises(RuntimeError):
+            find_record_by_serial("key123", "appXYZ", 1)
+
+
+class TestCmdUpdateItems(unittest.TestCase):
+    def _write_updates(self, updates):
+        f = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False, encoding="utf-8")
+        json.dump(updates, f)
+        f.close()
+        return f.name
+
+    @mock.patch.dict(os.environ, {"AIRTABLE_API_KEY": "key123", "AIRTABLE_BASE_ID": "appXYZ"})
+    @mock.patch("content_calendar.requests.patch")
+    @mock.patch("content_calendar.find_record_by_serial")
+    def test_updates_multiple_items(self, mock_find, mock_patch):
+        updates = [
+            {"serial": 1, "status": "פורסם"},
+            {"serial": 2, "status": "שונה", "note": "גרסה אחרת לטיקטוק"},
+        ]
+        path = self._write_updates(updates)
+        mock_find.side_effect = ["rec1", "rec2"]
+        mock_patch.return_value.status_code = 200
+
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            cmd_update_items(Args(updates_json=path))
+
+        os.unlink(path)
+        self.assertEqual(mock_patch.call_count, 2)
+        output = json.loads(buf.getvalue())
+        self.assertEqual(output["succeeded"], 2)
+        self.assertEqual(output["failed"], 0)
+
+    @mock.patch.dict(os.environ, {"AIRTABLE_API_KEY": "key123", "AIRTABLE_BASE_ID": "appXYZ"})
+    @mock.patch("content_calendar.find_record_by_serial")
+    def test_serial_not_found_is_reported_not_fatal_for_other_items(self, mock_find):
+        updates = [{"serial": 999, "status": "פורסם"}]
+        path = self._write_updates(updates)
+        mock_find.return_value = None
+
+        buf = io.StringIO()
+        with self.assertRaises(SystemExit):
+            with contextlib.redirect_stdout(buf):
+                cmd_update_items(Args(updates_json=path))
+
+        os.unlink(path)
+        output = json.loads(buf.getvalue())
+        self.assertEqual(output["failed"], 1)
+        self.assertIn("לא נמצאה רשומה", output["results"][0]["error"])
+
+    @mock.patch.dict(os.environ, {"AIRTABLE_API_KEY": "key123", "AIRTABLE_BASE_ID": "appXYZ"})
+    def test_invalid_status_never_calls_patch(self):
+        updates = [{"serial": 1, "status": "בתהליך"}]
+        path = self._write_updates(updates)
+
+        with mock.patch("content_calendar.requests.patch") as mock_patch:
+            buf = io.StringIO()
+            with self.assertRaises(SystemExit):
+                with contextlib.redirect_stdout(buf):
+                    cmd_update_items(Args(updates_json=path))
+            mock_patch.assert_not_called()
+
+        os.unlink(path)
+
+    @mock.patch.dict(os.environ, {"AIRTABLE_API_KEY": "key123", "AIRTABLE_BASE_ID": "appXYZ"})
+    @mock.patch("content_calendar.requests.patch")
+    @mock.patch("content_calendar.find_record_by_serial")
+    def test_patch_payload_never_contains_strategy_fields(self, mock_find, mock_patch):
+        updates = [{"serial": 1, "status": "פורסם", "note": "הערה", "final_link": "https://x"}]
+        path = self._write_updates(updates)
+        mock_find.return_value = "rec1"
+        mock_patch.return_value.status_code = 200
+
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            cmd_update_items(Args(updates_json=path))
+
+        os.unlink(path)
+        _, kwargs = mock_patch.call_args
+        sent_fields = set(kwargs["json"]["fields"].keys())
+        self.assertEqual(sent_fields, {"סטטוס", "הערה", "קישור/גרסה סופית"})
+        self.assertNotIn("ערוץ", sent_fields)
+        self.assertNotIn("נושא", sent_fields)
+        self.assertNotIn("שבוע / תאריך יעד", sent_fields)
 
 
 if __name__ == "__main__":
