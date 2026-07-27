@@ -40,6 +40,10 @@ When a request is about creating new content sourced from the internet:
 
 Noga can also be dispatched directly (without Liat) whenever the request is to write a newsletter/blog post/social post from a brief, or to rewrite/edit/translate/summarize content that's already available — she doesn't require Liat to have run first. Merav can also be dispatched directly whenever a request is purely about generating a content image.
 
+### Content production checklist (cross-cutting QA standard)
+
+[`content-production-checklist.md`](content-production-checklist.md) is a shared, cross-agent QA standard built directly from a real audit of a published article's failures (wrong dashes, gendered language, keyword-stuffed sentences, a dead CTA, a broken/mismatched link, a tracking parameter that would have miscounted signups, a missing hero image, an internal note left visible in the body). It covers four things: language/keyword/story rules, a link-and-CTA checklist (including the `?cs=blog-[name]` signup-tracking parameter — never copy a `?cs=instagram` or other channel's value into a blog link), SEO delivery requirements (meta length, five FAQs, author credit), and image rules split by type — **functional graphics** (diagrams/infographics: brand palette locked, Heebo/Assistant fonts, RTL flow) vs. **hero photos** (color free, no forced brand palette, so the blog archive doesn't turn into a wall of identical purple), plus an AI-image defect checklist (watermarks, fabricated logos/marks, finger count, readable gibberish text) and format/weight rules (JPG for photography, PNG for diagrams, 1200×630 JPG for share images, resolution/weight ceilings). Noga, Dani, and Merav each read the sections relevant to their own step (see their persona files) before finishing any website/blog article, and the file's part ד' pre-delivery checklist is the last gate before Roi reports a piece as ready — an unfilled `<div class="todo">` box (used when a required real customer story or a not-yet-known link isn't available — never invented) means the piece isn't done yet.
+
 ### Noga ↔ Merav connection (article with images)
 
 When Roi receives a request to create an article/post that needs images, the full loop is:
@@ -122,6 +126,7 @@ When Yael finalizes a monthly plan, she also creates one row per content item (I
 |------|------|
 | `.claude/agents/_registry.yaml` | Agent Registry — single source of truth for every agent's id/status/domain/capabilities/inputs/outputs/dependencies/tools (see "Agent Registry" above); not duplicated elsewhere |
 | `.claude/agents/roi.md` | Roi (CEO) persona — mandatory entry point; routes/dispatches per its own routing table, runs the workflow-orchestration layer (`.claude/workflows/`) for multi-step requests, aggregates results into one report |
+| [`content-production-checklist.md`](content-production-checklist.md) | Shared cross-agent QA standard (see "Content production checklist" above) — language/keyword/story rules, link-and-CTA checklist including the `?cs=` signup-tracking parameter, SEO delivery requirements, and image rules (functional graphics vs. hero photos, AI-defect checklist, format/weight); Noga/Dani/Merav each read the sections relevant to their step |
 | `.claude/agents/liat.md` | Liat persona — see `_registry.yaml` for capabilities/inputs/outputs/tools; reports to Roi only |
 | `.claude/agents/noga.md` | Noga persona — see `_registry.yaml` for capabilities/inputs/outputs/tools; reports to Roi only |
 | `.claude/agents/merav.md` | Merav persona — see `_registry.yaml` for capabilities/inputs/outputs/tools; reports to Roi only |
