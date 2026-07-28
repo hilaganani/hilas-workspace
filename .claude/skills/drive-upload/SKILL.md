@@ -74,8 +74,9 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/drive_upload.py create-folder --name "שם �
 | `blog/5-marketing-automation-mistakes` | `152SIK1UPA71KC5m7EmVP_i07Y1f14AO6` |
 | `dani-outputs` | `1WG8O84f-fgQV8TO3ALDkCNGEdSt9pFI4` |
 | `dani-outputs/technical-audits` | `1uQ7lKpua4J-nxnBRYvKrZLDW3ktrkblX` |
+| `7-foundations-launch-emails` (ניוזלטרים של השקת קורס "7 יסודות") | `1UJ8gGexabFNHI7zhkUsVaTkownVrrPVH` |
 
-**מוסכמה למאמר חדש**: תיקייה משלו תחת `blog`, בשם ה-slug של המאמר, ובתוכה ה-`.html`, ה-`.pdf` וחבילת ה-SEO. **כשאתה יוצר תיקייה חדשה - הוסף אותה לטבלה הזו באותו commit**, אחרת הריצה הבאה תשכפל אותה.
+**מוסכמה למאמר חדש**: תיקייה משלו תחת `blog`, בשם ה-slug של המאמר, ובתוכה ה-`.pdf` בלבד (**לא** ה-`.md`/`.html` - ראה את כלל ה-PDF-בלבד ב-`html-to-pdf/SKILL.md`, שינוי מ-28.7.2026). **כשאתה יוצר תיקייה חדשה - הוסף אותה לטבלה הזו באותו commit**, אחרת הריצה הבאה תשכפל אותה.
 
 ### העברת קובץ או תיקייה בין תיקיות
 
