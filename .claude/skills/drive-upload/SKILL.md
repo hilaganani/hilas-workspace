@@ -59,6 +59,34 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/drive_upload.py create-folder --name "שם �
 
 `--parent` הוא ה-folder ID של תיקיית האב (מהקישור של Drive, החלק אחרי `/folders/`). בלי `--parent`, התיקייה תיווצר ב-"My Drive" הראשי.
 
+### ⚠️ מרשם התיקיות - קרא לפני שאתה יוצר תיקייה חדשה
+
+הסקיל עובד ב-scope מצומצם (`drive.file`) ולכן **אינו יכול לחפש תיקיות קיימות** - הוא רואה רק מה שהוא עצמו יצר. המשמעות המעשית: אם תריץ `create-folder` בשם שכבר קיים, תיווצר **תיקייה כפולה** במקום שימוש בקיימת. זה קרה בפועל ב-2026-07-28 (נוצרה `dani-outputs` שנייה בשורש הדרייב, אוחדה ידנית).
+
+**לכן: אל תיצור תיקייה בלי לבדוק קודם את הטבלה הזו. אם היעד מופיע כאן, השתמש ב-ID ישירות.**
+
+| תיקייה | Folder ID |
+|---|---|
+| יעד ברירת מחדל לתוצרים (האב של השאר) | `1rlH6KEr3-IPYdAvzmbGZ4pEjICNeWXXr` |
+| `blog` (תיקיית אב למאמרי בלוג) | `1e1RJURjDQ4CeKORmLARc5RWLmSEycK8W` |
+| `blog/whatsapp-marketing-avoid-ban` | `1lHmYmu8d1VihSmmAt-yvEybhz_ewQiDr` |
+| `blog/manychat-real-examples-small-business` | `1i1_W53vTF3g-oalvWf9LXWiV7P7ztwIu` |
+| `blog/5-marketing-automation-mistakes` | `152SIK1UPA71KC5m7EmVP_i07Y1f14AO6` |
+| `dani-outputs` | `1WG8O84f-fgQV8TO3ALDkCNGEdSt9pFI4` |
+| `dani-outputs/technical-audits` | `1uQ7lKpua4J-nxnBRYvKrZLDW3ktrkblX` |
+
+**מוסכמה למאמר חדש**: תיקייה משלו תחת `blog`, בשם ה-slug של המאמר, ובתוכה ה-`.html`, ה-`.pdf` וחבילת ה-SEO. **כשאתה יוצר תיקייה חדשה - הוסף אותה לטבלה הזו באותו commit**, אחרת הריצה הבאה תשכפל אותה.
+
+### העברת קובץ או תיקייה בין תיקיות
+
+לסקריפט אין פקודת `move`. אם צריך לתקן מיקום (למשל אחרי שנוצרה כפילות), זו קריאת `PATCH` ישירה שמחליפה הורה - **בלי לשכפל את הקובץ**:
+
+```python
+requests.patch(f'https://www.googleapis.com/drive/v3/files/{FILE_ID}',
+    params={'addParents': NEW_PARENT, 'removeParents': OLD_PARENT, 'fields': 'id,name,parents'},
+    headers={'Authorization': 'Bearer ' + creds.token})
+```
+
 ### 3. העלאת קובץ
 
 ```bash
