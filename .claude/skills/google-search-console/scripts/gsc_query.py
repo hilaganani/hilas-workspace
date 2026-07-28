@@ -77,14 +77,13 @@ def cmd_search_analytics(args, session):
         "dimensions": args.dimensions.split(",") if args.dimensions else ["query"],
         "rowLimit": args.row_limit,
     }
+    filters = []
     if args.url_filter:
-        body["dimensionFilterGroups"] = [
-            {
-                "filters": [
-                    {"dimension": "page", "operator": "equals", "expression": args.url_filter}
-                ]
-            }
-        ]
+        filters.append({"dimension": "page", "operator": "equals", "expression": args.url_filter})
+    if args.country:
+        filters.append({"dimension": "country", "operator": "equals", "expression": args.country})
+    if filters:
+        body["dimensionFilterGroups"] = [{"filters": filters}]
     resp = session.post(url, json=body, timeout=30)
     print(json.dumps(resp.json(), ensure_ascii=False, indent=2))
 
@@ -113,6 +112,7 @@ def main():
     p_search.add_argument("--dimensions", default="query", help="comma-separated: query,page,date,country,device")
     p_search.add_argument("--row-limit", type=int, default=100)
     p_search.add_argument("--url-filter", default=None, help="limit to one specific page URL")
+    p_search.add_argument("--country", default=None, help="limit to one country, ISO 3166-1 alpha-3 lowercase, e.g. isr")
     p_search.set_defaults(func=cmd_search_analytics)
 
     p_inspect = sub.add_parser("inspect", help="real indexability status for one URL")
