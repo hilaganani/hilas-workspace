@@ -10,7 +10,8 @@
 /Content/
 
 # Noga's style guide + writing reference samples (personal/local, not committed)
-/noga/
+/noga/*
+!/noga/style-guide.md
 
 # Merav's working directory (style references + generated image outputs)
 /merav/
