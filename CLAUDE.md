@@ -4,7 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Project Does
 
-**CreativeAgent** is a multi-agent content & creative suite led by **רועי (Roi)**, the CEO/orchestrator. Roi is the mandatory entry point for every request in this workspace — he never does the work himself, he routes each request to the right team member(s) (in parallel when a task spans domains) and returns one unified report. Full spec: [`PRD-roi.md`](PRD-roi.md), persona: [`.claude/agents/roi.md`](.claude/agents/roi.md).
+**CreativeAgent** is a multi-agent content & creative suite. **רועי (Roi)** is the CEO/orchestrator — he never does the work himself, he routes a request to the right team member(s) (in parallel when a task spans domains) and returns one unified report. Full spec: [`PRD-roi.md`](PRD-roi.md), persona: [`.claude/agents/roi.md`](.claude/agents/roi.md).
+
+**When to dispatch Roi, and when not to** (changed 2026-07-31 — he was previously the *mandatory* entry point for every request, which made small asks slow):
+
+- **Through Roi** — work that genuinely needs orchestrating: a monthly content plan, an article that needs SEO + writing + images, anything spanning two or more domains, or a request matching a predefined workflow in `.claude/workflows/`.
+- **Directly, in the main session** — a caption, one post, an edit, a rewrite, a translation, a factual lookup, a small fix. Read the same source files the relevant persona would read (`noga/style-guide.md` and `noga/reference/`, `yael/strategy.md`, `merav/brand-guidelines.md`, `content-production-checklist.md`) and call the same skills. The personas' knowledge lives in those files, not in the agent definitions — nothing is lost by working directly.
+
+Routing a one-step task through Roi costs a full dispatch round-trip and buys nothing. When in doubt, ask whether more than one domain is actually involved; if not, do it directly.
 
 The team is planned at **7 people total**; **6 are built and active today** (Liat, Noga, Merav, Dani, Yael, Gefen). The 7th, **בר (Bar)** — LinkedIn marketing — is a named, real roadmap slot, not a generic placeholder, but has no persona file yet; Roi stops and reports instead of inventing this role.
 
@@ -145,7 +152,7 @@ When Yael finalizes a monthly plan, she also creates one row per content item (I
 | Path | Role |
 |------|------|
 | `.claude/agents/_registry.yaml` | Agent Registry — single source of truth for every agent's id/status/domain/capabilities/inputs/outputs/dependencies/tools (see "Agent Registry" above); not duplicated elsewhere |
-| `.claude/agents/roi.md` | Roi (CEO) persona — mandatory entry point; routes/dispatches per its own routing table, runs the workflow-orchestration layer (`.claude/workflows/`) for multi-step requests, aggregates results into one report |
+| `.claude/agents/roi.md` | Roi (CEO) persona — orchestrator for multi-domain/multi-step work, **not** a mandatory gate on every request (see "When to dispatch Roi" above); routes/dispatches per its own routing table, runs the workflow-orchestration layer (`.claude/workflows/`) for multi-step requests, aggregates results into one report |
 | [`content-production-checklist.md`](content-production-checklist.md) | Shared cross-agent QA standard (see "Content production checklist" above) — language/keyword/story rules, link-and-CTA checklist including the `?cs=` signup-tracking parameter, SEO delivery requirements, and image rules (functional graphics vs. hero photos, AI-defect checklist, format/weight); Noga/Dani/Merav each read the sections relevant to their step |
 | `.claude/agents/liat.md` | Liat persona — see `_registry.yaml` for capabilities/inputs/outputs/tools; reports to Roi only |
 | `.claude/agents/noga.md` | Noga persona — see `_registry.yaml` for capabilities/inputs/outputs/tools; reports to Roi only |
