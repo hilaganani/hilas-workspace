@@ -12,8 +12,8 @@ workflow:
 description: >
   Blog/website or LinkedIn content where organic search matters: SEO research
   folds into the brief before writing, SEO review happens after. Not for
-  Facebook/Instagram/TikTok content — see instagram-content workflow (not yet
-  migrated) or the standalone fallback routing for those.
+  Facebook/Instagram/TikTok content. Instagram multi-agent work uses
+  instagram-content-cycle.yaml; simple single-agent requests use fallback routing.
 
 trigger:
   content_type: [blog, website, linkedin]

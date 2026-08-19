@@ -59,12 +59,13 @@ agents:
     persona_path: .claude/agents/noga.md
     domain: content writing
     capabilities:
-      - newsletter/blog/social copywriting
+      - newsletter/blog/LinkedIn/Facebook/TikTok copywriting
+      - Instagram copywriting only when Hila explicitly assigns it to Noga
       - rewriting from a source article
       - smoove-newsletter (draft-only campaign creation)
     accepted_inputs:
       required: [source_file_or_direct_brief]
-      optional: [liat_research_file, seo_pre_write_brief, instagram_tactical_brief]
+      optional: [liat_research_file, seo_pre_write_brief, explicit_instagram_assignment_from_hila]
       implicit: [noga/style-guide.md, noga/reference/]
     produced_outputs:
       - path: "output/<name>.md"
@@ -100,7 +101,7 @@ agents:
       - path: "merav/outputs/<YYYY-MM-DD>-<slug>.txt"
         type: side
         note: "prompt used, flat at outputs/ root"
-    typical_dependencies: [noga]
+    typical_dependencies: [noga, gefen]
     required_tools: [Read, Write, Bash, Glob]
     tool_scope_notes:
       Bash: "scoped to gpt-image-gen and brand-renderer skills only"
@@ -152,7 +153,8 @@ agents:
     persona_path: .claude/agents/yael.md
     domain: strategic advisor
     capabilities:
-      - monthly content planning
+      - multi-channel content planning
+      - business/product/audience/offer/launch strategy
       - strategic-fit gate for new topics
       - plan-vs-actual item seeding (create-only, Airtable content calendar)
       - plan-vs-actual insight synthesis for the next monthly plan
@@ -180,24 +182,73 @@ agents:
   - id: gefen
     status: active
     persona_path: .claude/agents/gefen.md
-    domain: Instagram marketing
+    domain: Instagram strategy and content
     capabilities:
-      - profile-structure recommendations
-      - per-post tactical brief/review
+      - Instagram account diagnosis and strategy
+      - Instagram content planning and pillar management
+      - Reel, Carousel, Caption, Story, CTA and filming-script writing
+      - visual briefs for Merav
+      - reference-content reverse engineering
+      - performance analysis, experiments and cycle learning
+      - multi-source Instagram performance interpretation
+      - session recovery from shared sources of truth
     accepted_inputs:
-      required: [post_topic_or_brief, OR_explicit_profile_structure_request]
-      optional: [current_strategic_priority_from_yael]
-      implicit: [yael/strategy.md, yael/outputs/]
+      required: [instagram_request]
+      optional: [reference_screenshot_or_url, published_content_evidence, insights_data, business_context_from_yael]
+      implicit: [instagram/current-state.md, instagram/master-brief.md, instagram/content-pillars.md, instagram/content-bank.md, instagram/highlights.md]
     produced_outputs:
-      - path: "gefen/outputs/<YYYY-MM-DD>-<slug>-profile-structure.md"
-        type: final
-        note: "profile-structure mode only"
-      - verbal_brief_or_review:
-        type: final
-        note: "per-post mode — never saved to a file, by design"
+      - instagram_strategy_or_diagnosis
+      - instagram_content_plan
+      - finished_instagram_copy
+      - reference_content_analysis
+      - visual_brief_for_merav
+      - performance_learning_recommendations
     typical_dependencies: []
     required_tools: [WebSearch, WebFetch, Read, Write, Edit, Glob, Grep]
-    optional_integrations: []
+    optional_integrations:
+      - name: attached_image_vision
+        degrades: "If the screenshot is not exposed to the agent as an image or readable local file, request re-attachment or a text description"
+      - name: instagram_live_url_access
+        degrades: "Instagram often blocks WebFetch; use an accessible public page, screenshots, transcript, or supplied text instead"
+      - name: instagram_ops_and_insights
+        status: google_sheets_implemented
+        degrades: "If Google Sheets access is unavailable, Instagram Ops reports the gap and uses supplied exports/screenshots without inventing persistent state"
+
+  - id: instagram-ops
+    status: active
+    persona_path: .claude/agents/instagram-ops.md
+    domain: Instagram operations and measurement
+    capabilities:
+      - active execution-plan tracking
+      - Content ID, date, status, link, asset and blocker management
+      - read-only Instagram Insights collection when runtime access exists
+      - Google Sheets operational reads and approved factual updates
+      - read-only Search Console evidence collection
+      - factual performance reports for Gefen
+      - operational current-state maintenance
+    accepted_inputs:
+      required: [operational_or_measurement_request]
+      optional: [content_ids, date_range, supplied_exports_screenshots_or_reports]
+      implicit: [instagram/current-state.md, instagram/content-bank.md, instagram/master-brief.md]
+    produced_outputs:
+      - factual_performance_report
+      - operational_current_state_update
+      - missing_data_and_setup_report
+    typical_dependencies: []
+    required_tools: [Read, Write, Edit, Glob, Grep, WebFetch, Bash]
+    tool_scope_notes:
+      Bash: "read-only airtable-read for non-Instagram legacy sources and google-search-console only"
+      Write_Edit: "performance reports and operational sections of instagram/current-state.md only"
+    optional_integrations:
+      - name: google_sheets_instagram_operations
+        status: implemented
+      - name: google_search_console
+        status: read_only_available_with_local_credentials
+      - name: connected_chrome_instagram_insights
+        status: runtime_dependent
+        degrades: "Use exports/screenshots or report blocked_needs_setup; repository does not provide a guaranteed Chrome tool"
+      - name: instagram_operations_and_performance_sheets
+        status: implemented
 
   - id: bar
     status: planned

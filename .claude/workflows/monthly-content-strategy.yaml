@@ -1,42 +1,28 @@
-# Second workflow — implemented to validate that the engine proven by seo-gated-content.yaml
-# (architecture/09-implementation-roadmap.md §6 Phase A/B) generalizes to a different kind of
-# business process, not just a second content-writing pipeline. Structurally: a two-pass
-# same-agent dependency (Yael runs twice, exactly like Dani does in seo-gated-content.yaml),
-# a real fan-out/fan-in (Liat + Dani run in parallel off Yael's first pass), and — new relative
-# to the first pilot — a human approval gate ahead of an agent dispatch (Gefen), rather than
-# an agent-driven gate (seo-gated-content.yaml's gate is Yael's own strategic_gate verdict).
-#
-# Deliberately does NOT introduce any new schema field, step type, or status value. Every
-# field used below already exists in _schema.md and is already exercised by
-# seo-gated-content.yaml. One expressiveness gap was found while designing this workflow —
-# see "Human approval gate — a known gap, not a new feature" below — and is intentionally
-# left as a flagged, unimplemented proposal rather than built silently.
+# Multi-channel strategy led by Yael. This is not the recurring Instagram production cycle;
+# Instagram execution uses instagram-content-cycle.yaml.
 
 id: monthly-content-strategy
 workflow:
   name: monthly-content-strategy
-  version: 1.0.0
-  last_updated: 2026-07-15
+  version: 2.0.0
+  last_updated: 2026-08-19
 description: >
-  Builds a research-backed, SEO-informed monthly content strategy across social/newsletter/
-  website, gated by the user's explicit approval of Yael's final plan before Gefen turns it
-  into Instagram profile-structure guidance. Supersedes the ad hoc "Yael alone" monthly-plan
-  path (roi.md's existing routing table) whenever the request calls for a full strategic
-  build informed by live research (Liat) and topical/SEO input (Dani), not a quick solo plan.
-  The human-approval step gates gefen_instagram_planning: it does not dispatch until the user
-  explicitly approves yael_final_strategy's plan (see "Human approval gate" note below for
-  what happens instead of a plain approval).
+  Builds a research-backed, SEO-informed multi-channel monthly strategy led by Yael.
+  After Hila approves Yael's final plan, an Instagram component is handed to Gefen for
+  platform-specific interpretation. This workflow does not dispatch Noga for Instagram,
+  does not run the regular Instagram cycle, and does not make Yael a standing gateway for
+  later Instagram work.
 
 trigger:
   keywords_he: [תוכנית תוכן חודשית, תוכנית תוכן, תוכנית חודשית, אסטרטגיית תוכן, בנה תוכנית לחודש, תוכנית תוכן מלאה]
   keywords_en: [monthly content plan, monthly content strategy, monthly strategy, content strategy, build a content plan, full content plan]
 
 deliverables:
-  - yael_initial_strategy    # text only, reported to Roi — no file (same pattern as Dani's pre-write brief in seo-gated-content.yaml; see _schema.md's "inputs_from may resolve to reported text, not always a file")
-  - liat_research             # Content/<YYYY-MM-DD>-<slug>.md
-  - dani_seo_insights          # dani/outputs/content-planning/<YYYY-MM-DD>-<slug>.md (seo-content-planning skill — already documented as "an input to Yael's monthly content plan")
-  - yael_final_strategy        # yael/outputs/<YYYY-MM>-content-plan.md + .docx
-  - gefen_instagram_planning   # gefen/outputs/<YYYY-MM-DD>-<slug>-profile-structure.md — gated on human approval, see note below
+  - yael_initial_strategy
+  - liat_research
+  - dani_seo_insights
+  - yael_final_strategy
+  - gefen_instagram_context_if_present
 
 steps:
   - id: yael_initial_strategy
@@ -48,6 +34,7 @@ steps:
 
   - id: liat_research
     agent: liat
+    type: agent
     depends_on: [yael_initial_strategy]
     inputs_from: [yael_initial_strategy]
     retry:
@@ -56,6 +43,7 @@ steps:
 
   - id: dani_seo_insights
     agent: dani
+    type: agent
     depends_on: [yael_initial_strategy]
     inputs_from: [yael_initial_strategy]
     retry:
@@ -71,15 +59,15 @@ steps:
       max_attempts: 1
       on: [tool_error]
 
-  # Human approval gate — a known gap, not a new feature (see the note further below).
-  # awaits_human_approval gates THIS step's dispatch on the user's explicit approval of
-  # yael_final_strategy's plan, exactly per _schema.md's existing "Human approval gates"
-  # section. What is NOT yet formalized: what happens if the user responds with a revision
-  # request instead of approval. See the explanatory note below the steps list.
-  - id: gefen_instagram_planning
+  # This gate approves the multi-channel plan. The step runs only when that approved plan
+  # actually contains an Instagram component. Gefen receives business context; she is not
+  # being asked to write the monthly plan's Instagram deliverables inside this workflow.
+  - id: gefen_instagram_context
     agent: gefen
+    type: agent
     depends_on: [yael_final_strategy]
     inputs_from: [yael_final_strategy]
+    run_if: has_instagram_component
     awaits_human_approval: true
     retry:
       max_attempts: 1
@@ -87,46 +75,15 @@ steps:
 
   - id: combine
     type: synthesis
-    depends_on: [gefen_instagram_planning]
-    inputs_from: [yael_final_strategy, gefen_instagram_planning]
+    depends_on: [yael_final_strategy, gefen_instagram_context]
+    inputs_from: [yael_final_strategy, gefen_instagram_context]
 
 completion_criteria:
-  - yael_final_strategy's plan is informed by both liat_research and dani_seo_insights, not just yael_initial_strategy's initial read
-  - gefen_instagram_planning is never dispatched before the user has explicitly approved yael_final_strategy's plan
-  - the final report references both yael/outputs/<YYYY-MM>-content-plan.md(+.docx) and gefen/outputs/<...>-profile-structure.md as separate, independently useful deliverables — combine does not fabricate a new merged file where two existing per-agent outputs already serve the purpose (unlike seo-gated-content.yaml's combine step, which genuinely needs to merge text+images into one publishable file)
+  - Yael remains the owner of the multi-channel business strategy
+  - Gefen runs only when has_instagram_component is true and only after Hila approves the final multi-channel plan
+  - the approved Instagram context is handed to Gefen without dispatching Noga for Instagram
+  - no Instagram deliverable is produced or published by this workflow; recurring execution uses instagram-content-cycle
+  - later Instagram cycles do not require Yael unless product, service, audience, offer, launch, business objective or multi-channel strategy changes
 
-# ---------------------------------------------------------------------------------------
-# Human approval gate — a known gap, not a new feature (read before treating this workflow
-# as fully equivalent to seo-gated-content.yaml's approval handling)
-# ---------------------------------------------------------------------------------------
-#
-# _schema.md's "Human approval gates" section documents exactly one outcome for
-# awaits_human_approval: true — the step "only proceeds once the user gives explicit
-# affirmative confirmation in chat." It does not document what happens if the user's
-# response is a revision request instead of approval.
-#
-# The one existing precedent for "human asks for changes instead of approving" is the
-# weekly-plan-email flow (CLAUDE.md's "Weekly plan email & approval gate", roi.md's
-# dedicated section for it): "אם המשתמשת מבקשת שינויים לפני אישור — העבר את הבקשה ל-yael
-# לעדכן את התוכנית". That instruction is hard-coded to that one feature, not part of the
-# generic workflow engine (_schema.md / roi.md's "שכבת התכנון") that this YAML file is
-# executed through — Phase 9's roadmap still lists that flow as unmigrated for exactly this
-# reason. So a fresh Roi session resuming THIS workflow has no generic, documented rule for
-# re-opening yael_final_strategy on a revision request, or for how that interacts with
-# resumability (TaskList-based open-run detection across sessions).
-#
-# This is NOT implemented as a new schema field here, per explicit instruction not to
-# introduce new architecture without approval. Smallest possible fix, if approved:
-# one optional field, `revision_target: <step-id>`, valid only alongside
-# awaits_human_approval: true — on a revision request, Roi re-dispatches the named step
-# with the feedback appended, and this step re-enters its awaiting-approval state once the
-# target step completes again. That would need exactly two small additions, both slotting
-# into sections that already exist: one paragraph in _schema.md's existing "Human approval
-# gates" section, and one bullet generalizing the weekly-plan-email instruction inside
-# roi.md's existing "שכבת התכנון" §3 (which already handles blocked_needs_approval). No new
-# step type, tool, or status value. Not built in this pass — awaiting explicit approval.
-#
-# Until then: a revision request at this gate is handled the same way any user request to
-# redo an agent's output is already handled today, conversationally, by Roi's own general
-# judgment — this works, but is not yet a formally declared, resumable-across-sessions
-# workflow behavior the way seo-gated-content.yaml's retry/gate handling is.
+# A revision request at the human gate remains handled conversationally by Roi because the
+# current workflow schema has no revision_target field. No new engine field is introduced.

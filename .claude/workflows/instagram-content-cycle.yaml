@@ -1,0 +1,190 @@
+# End-to-end Instagram coordination. This file coordinates agents; domain behavior remains
+# in their persona files. Publication is manual; operational state lives in the approved Google Sheet.
+
+id: instagram-content-cycle
+workflow:
+  name: instagram-content-cycle
+  version: 1.0.0
+  last_updated: 2026-08-19
+description: >
+  Runs an Instagram cycle from factual state through direction, Hila approval, writing,
+  optional design, operational handoff, manual publication, measurement and learning.
+  A wide initial diagnosis runs only when initial_diagnosis_required is true. A direct
+  explicit writing request uses gefen_direct_write and does not add an approval gate.
+
+trigger:
+  content_type: [instagram]
+  keywords_he: [אינסטגרם, ריל, קרוסלה, סטורי, קפשן, גפן, פוסט שאהבתי, ניתוח רפרנס]
+  keywords_en: [instagram, reel, carousel, story, caption, gefen, reference content]
+
+# Execution-context flags resolved from the request/current state:
+# initial_diagnosis_required, reference_request, additional_evidence_required,
+# yael_context_required, direction_approval_required, explicit_write_request,
+# needs_design, needs_operational_handoff, publication_evidence_available, measurement_due.
+
+deliverables:
+  - ops_factual_snapshot
+  - gefen_direction_or_reference_analysis
+  - gefen_finished_content
+  - merav_assets_if_needed
+  - ops_operational_handoff
+  - ops_performance_report_if_due
+  - gefen_cycle_learning_if_measured
+
+steps:
+  - id: ops_factual_snapshot
+    agent: instagram-ops
+    type: agent
+    retry:
+      max_attempts: 1
+      on: [tool_error]
+
+  - id: yael_business_context
+    agent: yael
+    type: agent
+    depends_on: [ops_factual_snapshot]
+    inputs_from: [ops_factual_snapshot]
+    run_if: yael_context_required
+    retry:
+      max_attempts: 1
+      on: [tool_error]
+
+  - id: external_evidence_report
+    agent: instagram-ops
+    type: agent
+    depends_on: [ops_factual_snapshot]
+    inputs_from: [ops_factual_snapshot]
+    run_if: additional_evidence_required
+    retry:
+      max_attempts: 1
+      on: [tool_error]
+
+  - id: gefen_initial_diagnosis
+    agent: gefen
+    type: agent
+    depends_on: [ops_factual_snapshot, yael_business_context, external_evidence_report]
+    inputs_from: [ops_factual_snapshot, yael_business_context, external_evidence_report]
+    run_if: initial_diagnosis_required
+    retry:
+      max_attempts: 1
+      on: [tool_error]
+
+  - id: gefen_reference_analysis
+    agent: gefen
+    type: agent
+    depends_on: [ops_factual_snapshot, yael_business_context]
+    inputs_from: [ops_factual_snapshot, yael_business_context]
+    run_if: reference_request
+    retry:
+      max_attempts: 1
+      on: [tool_error, empty_output]
+
+  - id: gefen_direction
+    agent: gefen
+    type: agent
+    depends_on: [ops_factual_snapshot, yael_business_context, external_evidence_report, gefen_initial_diagnosis, gefen_reference_analysis]
+    inputs_from: [ops_factual_snapshot, yael_business_context, external_evidence_report, gefen_initial_diagnosis, gefen_reference_analysis]
+    run_if: direction_approval_required
+    retry:
+      max_attempts: 1
+      on: [tool_error]
+
+  # The approval is for direction: idea, pillar, format, Hook, objective, real source
+  # material, business context and Experiment (if any). A revision returns conversationally
+  # to gefen_direction; the current schema has no generic revision_target field.
+  - id: gefen_write_after_approval
+    agent: gefen
+    type: agent
+    depends_on: [gefen_direction]
+    inputs_from: [gefen_direction]
+    run_if: direction_approval_required
+    awaits_human_approval: true
+    retry:
+      max_attempts: 1
+      on: [tool_error]
+
+  # Used only when Hila explicitly asks to write a concrete deliverable now. Her instruction
+  # is the approval; this branch must not add a second artificial gate.
+  - id: gefen_direct_write
+    agent: gefen
+    type: agent
+    depends_on: [ops_factual_snapshot, yael_business_context]
+    inputs_from: [ops_factual_snapshot, yael_business_context]
+    run_if: explicit_write_request
+    retry:
+      max_attempts: 1
+      on: [tool_error]
+
+  - id: merav_design
+    agent: merav
+    type: agent
+    depends_on: [gefen_write_after_approval, gefen_direct_write]
+    inputs_from: [gefen_write_after_approval, gefen_direct_write]
+    run_if: needs_design
+    retry:
+      max_attempts: 1
+      on: [tool_error]
+
+  - id: ops_operational_handoff
+    agent: instagram-ops
+    type: agent
+    depends_on: [gefen_write_after_approval, gefen_direct_write, merav_design]
+    inputs_from: [gefen_write_after_approval, gefen_direct_write, merav_design]
+    run_if: needs_operational_handoff
+    retry:
+      max_attempts: 1
+      on: [tool_error]
+
+  - id: ops_verify_publication
+    agent: instagram-ops
+    type: agent
+    depends_on: [ops_operational_handoff]
+    inputs_from: [ops_operational_handoff]
+    run_if: publication_evidence_available
+    retry:
+      max_attempts: 1
+      on: [tool_error]
+
+  - id: ops_measurement_report
+    agent: instagram-ops
+    type: agent
+    depends_on: [ops_verify_publication]
+    inputs_from: [ops_verify_publication, external_evidence_report]
+    run_if: measurement_due
+    retry:
+      max_attempts: 1
+      on: [tool_error]
+
+  - id: gefen_cycle_learning
+    agent: gefen
+    type: agent
+    depends_on: [ops_measurement_report]
+    inputs_from: [ops_measurement_report]
+    run_if: measurement_due
+    retry:
+      max_attempts: 1
+      on: [tool_error]
+
+  - id: ops_current_state_handoff
+    agent: instagram-ops
+    type: agent
+    depends_on: [ops_operational_handoff, ops_verify_publication, ops_measurement_report, gefen_cycle_learning]
+    inputs_from: [ops_operational_handoff, ops_verify_publication, ops_measurement_report, gefen_cycle_learning]
+    retry:
+      max_attempts: 1
+      on: [tool_error]
+
+completion_criteria:
+  - initial diagnosis runs only when initial_diagnosis_required is true
+  - a new direction is not written before Hila approves it; explicit_write_request uses the ungated direct-write branch
+  - Reference content is analyzed before direction selection and is never sent to Merav or registered as publishable content itself
+  - Merav receives Content ID, format, dimensions or asset type when known, slide order, all approved text, hierarchy, objective, visual direction, constraints and locked elements
+  - Ops receives only Content ID, title, format, pillar, target date, required action, approved-output link, Highlight instruction and optional Experiment ID
+  - publication remains manual; Ops marks published only from a live URL, Hila's explicit report or direct profile verification
+  - Ops reports Facts, Missing data and Anomalies without interpretation; Gefen owns the learning
+  - current-state contains only a short handoff and links, never full scripts, full Insights, snapshot history or logs
+
+# Multi-source evidence interface: any authorized source/agent report handed into this run
+# must state source, period, collection time, relevant Content IDs and missing data. No fixed
+# Dani dependency is declared here; Search/SEO interpretation may be routed separately when
+# an actual operational need is approved.
