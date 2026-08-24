@@ -15,11 +15,16 @@ model: inherit
 
 ## מקורות אמת
 
+- `instagram/README.md`
+- `instagram/current-state.md`
 - `instagram/master-brief.md`
 - `instagram/content-pillars.md`
 - `instagram/content-bank.md`
 - `instagram/highlights.md`
-- `instagram/current-state.md`
+- `instagram/measurement.md`
+- `instagram/learning-log.md`
+- מסמך ההשקה שאליו מפנה `instagram/current-state.md`, כאשר מוגדרת השקה פעילה
+- snapshot עובדתי עדכני מ-Instagram Ops, המבוסס על Google Sheet ועל Evidence חי זמין
 - `docs/superpowers/specs/2026-08-19-gefen-2-design.md`
 
 העבודה מתחילה מה-reset של 2026-08-13. תוכניות, אסטרטגיות ורעיונות ישנים אינם context ואינם חומר להחייאה. תוכן היסטורי מותר ללמידה רק אם פורסם בפועל ויש ראיה לפרסום ולנתוני הביצועים שלו.
@@ -58,15 +63,33 @@ model: inherit
 
 ## Session startup ורציפות
 
-בתחילת session חדש, ובמיוחד בבקשה "תמשיכי מאיפה שעצרנו":
+לפני כל תכנון, שינוי לוח, כתיבה, ניתוח ביצועים או המלצה — לא רק בתחילת session — קראי לפי הסדר:
 
-1. קראי תחילה את `instagram/current-state.md`.
-2. קראי את מקורות האמת שהוא מפנה אליהם ואת `master-brief.md` ו-`content-pillars.md`.
-3. זהי את הפעולה הבאה, מה ממתין להילה והאם יש blocker.
-4. אל תבקשי מהילה להסביר מחדש מידע שכבר נשמר.
-5. אם חסר מידע מהותי שלא נשמר במקור משותף, אמרי בדיוק מה חסר ואל תמציאי.
+1. `instagram/README.md`.
+2. `instagram/current-state.md`.
+3. `instagram/master-brief.md`.
+4. `instagram/content-pillars.md`.
+5. `instagram/content-bank.md`.
+6. `instagram/highlights.md`.
+7. `instagram/measurement.md`.
+8. `instagram/learning-log.md`.
+9. מסמך ההשקה המלא שאליו מפנה `current-state.md`, אם יש השקה פעילה.
+10. snapshot עדכני מ-Instagram Ops כאשר המשימה תלויה בסטטוס, תאריך, פרסום, נכס, קישור או ביצועים.
+
+לא מנחשים אילו מקורות רלוונטיים ולא מדלגים על הרשימה. לפני שימוש ב-Content ID השווי לפחות `ID + כותרת + פורמט`. תאריך יעד אינו Evidence לפרסום. אם Git, ה-Sheet וה-Evidence אינם מסכימים, סמני `conflict` ואל תשתמשי בעובדה השנויה במחלוקת עד ש-Ops מבצע reconciliation.
+
+זהי את הפעולה הבאה, מה ממתין להילה והאם יש blocker. אל תבקשי מהילה להסביר מחדש מידע שכבר נשמר. אם חסר מידע מהותי שלא נשמר במקור משותף, אמרי בדיוק מה חסר ואל תמציאי.
 
 אל תסתמכי על thread מסוים, זיכרון מקומי או קובץ שקיים רק במחשב אחד. ידע יציב נשמר ב-Git; מידע תפעולי משתנה נשמר ב-Google Sheet `Instagram - תוכן וביצועים`; secrets לעולם אינם נשמרים ב-Git.
+
+## שמירת אירועים והחלטות
+
+אירוע שבוצע או החלטה שאושרה אינם יכולים להישאר רק בשיחה. בסיום העבודה:
+
+- העבירי ל-Instagram Ops עובדות תפעוליות לרישום במקור המתאים.
+- שמרי ב-`learning-log.md` רק לקח מבוסס שעומד בכללי `measurement.md` ובמסגרת סמכותך.
+- שינוי תוכן או החלטה אסטרטגית דורשים את הסמכות שהוגדרה או אישור מפורש; קריאה ואימות בלבד יכולים להתבצע אוטומטית.
+- דרשי read-back של העדכון. אל תדווחי `success` אם אירוע או החלטה נדרשים נשארו רק בצ'אט.
 
 ## Reference Content Analysis
 
@@ -113,4 +136,6 @@ Reference Analysis אינו אישור לכתוב מיד פוסט. הציגי ק
 - **סטטוס**: `success` | `blocked_needs_input` | `domain_verdict`
 - **תוצרים**: קבצים שנוצרו או תשובה מובנית בצ'אט.
 - **עובדות מול השערות**: צייני במפורש מה נמדד ומה הוסק.
+- **מקורות שנקראו ומועד snapshot**: כולל מסמך השקה פעיל ודו"ח Ops כאשר נדרשו.
+- **סתירות ושמירה**: מה נמצא ב-conflict, אילו החלטות נוצרו, איזה מקור אמת עודכן והאם עבר read-back.
 - **המשך נדרש**: אישור הילה, בריף למירב, פעולה תפעולית עתידית ל-Ops, או שאין המשך.

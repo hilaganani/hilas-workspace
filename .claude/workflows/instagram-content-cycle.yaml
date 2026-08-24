@@ -4,8 +4,8 @@
 id: instagram-content-cycle
 workflow:
   name: instagram-content-cycle
-  version: 1.0.0
-  last_updated: 2026-08-19
+  version: 1.1.0
+  last_updated: 2026-08-24
 description: >
   Runs an Instagram cycle from factual state through direction, Hila approval, writing,
   optional design, operational handoff, manual publication, measurement and learning.
@@ -20,7 +20,8 @@ trigger:
 # Execution-context flags resolved from the request/current state:
 # initial_diagnosis_required, reference_request, additional_evidence_required,
 # yael_context_required, direction_approval_required, explicit_write_request,
-# needs_design, needs_operational_handoff, publication_evidence_available, measurement_due.
+# needs_design, needs_operational_handoff, publication_evidence_available, measurement_due,
+# persistence_required, approved_git_persistence_required, external_write_authorized.
 
 deliverables:
   - ops_factual_snapshot
@@ -30,6 +31,8 @@ deliverables:
   - ops_operational_handoff
   - ops_performance_report_if_due
   - gefen_cycle_learning_if_measured
+  - gefen_approved_git_persistence_if_required
+  - persisted_event_and_decision_report
 
 steps:
   - id: ops_factual_snapshot
@@ -38,6 +41,11 @@ steps:
     retry:
       max_attempts: 1
       on: [tool_error]
+
+  # Mandatory cold-start reconciliation. Ops reads instagram/README.md, all operational
+  # Git sources and the live Sheet, then compares Content ID + title + format. It returns
+  # verified, stale, conflict, missing evidence and snapshot time. This is read-only and
+  # may run automatically. A conflict is never resolved by guessing which source wins.
 
   - id: yael_business_context
     agent: yael
@@ -165,11 +173,59 @@ steps:
       max_attempts: 1
       on: [tool_error]
 
+  - id: gefen_persist_learning
+    agent: gefen
+    type: agent
+    depends_on: [gefen_cycle_learning]
+    inputs_from: [ops_measurement_report, gefen_cycle_learning]
+    run_if: measurement_due
+    retry:
+      max_attempts: 1
+      on: [tool_error]
+
+  # Writes approved content/strategy/learning to the appropriate Git source. This step runs
+  # only after the relevant direction/content/decision has already received the approval
+  # required by Gefen's persona. It never treats this workflow flag as approval by itself.
+  - id: gefen_persist_approved_git_knowledge
+    agent: gefen
+    type: agent
+    depends_on: [gefen_direction, gefen_write_after_approval, gefen_direct_write, gefen_cycle_learning, gefen_persist_learning]
+    inputs_from: [gefen_direction, gefen_write_after_approval, gefen_direct_write, gefen_cycle_learning, gefen_persist_learning]
+    run_if: approved_git_persistence_required
+    retry:
+      max_attempts: 1
+      on: [tool_error]
+
+  # Persists executed events and approved decisions in the field-specific source of truth.
+  # Read/verification is automatic. A content change, strategic decision or external-system
+  # write runs only when the persona/workflow already grants that authority or when
+  # external_write_authorized records Hila's explicit approval. Without authority, Ops
+  # reports the exact pending update and returns partial_success rather than writing.
+  - id: ops_persist_event
+    agent: instagram-ops
+    type: agent
+    depends_on: [ops_operational_handoff, ops_verify_publication, ops_measurement_report, gefen_persist_learning, gefen_persist_approved_git_knowledge]
+    inputs_from: [ops_operational_handoff, ops_verify_publication, ops_measurement_report, gefen_cycle_learning, gefen_persist_learning, gefen_persist_approved_git_knowledge]
+    run_if: persistence_required
+    retry:
+      max_attempts: 1
+      on: [tool_error]
+
+  - id: ops_verify_persistence
+    agent: instagram-ops
+    type: agent
+    depends_on: [ops_persist_event]
+    inputs_from: [ops_persist_event]
+    run_if: persistence_required
+    retry:
+      max_attempts: 1
+      on: [tool_error]
+
   - id: ops_current_state_handoff
     agent: instagram-ops
     type: agent
-    depends_on: [ops_operational_handoff, ops_verify_publication, ops_measurement_report, gefen_cycle_learning]
-    inputs_from: [ops_operational_handoff, ops_verify_publication, ops_measurement_report, gefen_cycle_learning]
+    depends_on: [ops_operational_handoff, ops_verify_publication, ops_measurement_report, gefen_cycle_learning, ops_verify_persistence]
+    inputs_from: [ops_operational_handoff, ops_verify_publication, ops_measurement_report, gefen_cycle_learning, ops_verify_persistence]
     retry:
       max_attempts: 1
       on: [tool_error]
@@ -183,6 +239,13 @@ completion_criteria:
   - publication remains manual; Ops marks published only from a live URL, Hila's explicit report or direct profile verification
   - Ops reports Facts, Missing data and Anomalies without interpretation; Gefen owns the learning
   - current-state contains only a short handoff and links, never full scripts, full Insights, snapshot history or logs
+  - before planning or writing, Ops reconciles Content ID + title + format and reports verified, stale, conflict, missing evidence and snapshot time
+  - a target date alone never proves publication; published status requires a live URL, Hila's explicit report or direct profile verification
+  - an executed publication/non-publication/date/content/Highlight/measurement event and an approved decision are persisted in the field-specific source of truth or reported as a pending unauthorized write
+  - read and verification may run automatically; content changes, strategic decisions and external-system writes require existing scoped authority or explicit approval
+  - persistence is read back before success; a required update left only in conversation returns partial_success
+  - learning-log receives only data-backed learning with source, Content ID, measurement window, finding, confidence and resulting decision
+  - content replacement never overwrites the old item and never reuses an occupied Content ID
 
 # Multi-source evidence interface: any authorized source/agent report handed into this run
 # must state source, period, collection time, relevant Content IDs and missing data. No fixed

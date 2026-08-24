@@ -195,7 +195,7 @@ agents:
     accepted_inputs:
       required: [instagram_request]
       optional: [reference_screenshot_or_url, published_content_evidence, insights_data, business_context_from_yael]
-      implicit: [instagram/current-state.md, instagram/master-brief.md, instagram/content-pillars.md, instagram/content-bank.md, instagram/highlights.md]
+      implicit: [instagram/README.md, instagram/current-state.md, instagram/master-brief.md, instagram/content-pillars.md, instagram/content-bank.md, instagram/highlights.md, instagram/measurement.md, instagram/learning-log.md, active_launch_document_from_current_state, factual_snapshot_from_instagram_ops]
     produced_outputs:
       - instagram_strategy_or_diagnosis
       - instagram_content_plan
@@ -229,7 +229,7 @@ agents:
     accepted_inputs:
       required: [operational_or_measurement_request]
       optional: [content_ids, date_range, supplied_exports_screenshots_or_reports]
-      implicit: [instagram/current-state.md, instagram/content-bank.md, instagram/master-brief.md]
+      implicit: [instagram/README.md, instagram/current-state.md, instagram/content-bank.md, instagram/highlights.md, instagram/measurement.md, "Google Sheet: Instagram - תוכן וביצועים"]
     produced_outputs:
       - factual_performance_report
       - operational_current_state_update

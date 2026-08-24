@@ -4,6 +4,8 @@
 
 הנוסחים המאושרים: [`instagram/content-bank.md`](content-bank.md).
 
+אינדקס הידע וסדר הקריאה המחייב: [`instagram/README.md`](README.md). כללי המדידה: [`instagram/measurement.md`](measurement.md). לקחים מבוססי נתונים: [`instagram/learning-log.md`](learning-log.md).
+
 ## מטרת העבודה
 
 השלב האסטרטגי כבר נעשה. Gefen 2.0 אינה מתחילה מחדש את המיצוב: היא מפתחת את אסטרטגיית ותוכן Instagram מתוך התשתית המאושרת, מנתחת ביצועים ומחליטה אילו נושאים, Hooks ופורמטים כדאי לפתח במחזור הבא. ניהול נתונים, סטטוסים, לוח ביצוע ומעקב תפעולי שייכים ל-Instagram Ops.
