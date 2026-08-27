@@ -250,6 +250,41 @@ agents:
       - name: instagram_operations_and_performance_sheets
         status: implemented
 
+  - id: tamar
+    status: active
+    persona_path: .claude/agents/tamar.md
+    domain: sales proposals and pricing
+    capabilities:
+      - proposal drafting from a call transcript and/or brief
+      - pricing per catalog and business rules
+      - reuse of structure/wording from past Prospero proposals
+      - revenue-mix and capacity oversight toward the 100K target
+    accepted_inputs:
+      required: [call_transcript_OR_brief]
+      optional: [client_name, existing_deal_record_id]
+      implicit:
+        - tamar/pricing-rules.md
+        - tamar/product-details.md
+        - tamar/proposals/INDEX.md
+        - tamar/proposal-template.md
+        - "מוצרים table in Mini CRM (appcfuP4ufqhwipBm), read live"
+    produced_outputs:
+      - path: "tamar/outputs/<YYYY-MM-DD>-<client>-proposal.md"
+        type: final
+      - airtable_deal_update: "מחיר העסקה / תיאור / מוצרים / Stage / סיכום לקראת שיחה in עסקאות (tbl3dP8utT9rgw0AT)"
+        type: final
+        note: "only after Hila confirms in chat that the proposal was actually sent — a draft is not a deal"
+    typical_dependencies: []
+    required_tools: [Read, Write, Edit, Glob, Grep, Bash]
+    tool_scope_notes:
+      Bash: "scoped to .claude/skills/crm-deals/scripts/crm_deals.py only — no other scripts, no other API calls"
+    optional_integrations: []
+    note: >
+      Single-domain by design — dispatched directly, not through Roi (per
+      CLAUDE.md's "when to dispatch Roi" rule). Never sends a proposal and never
+      creates one in Prospero; Hila copies the draft over herself. The Mini CRM
+      base is NOT the base AIRTABLE_BASE_ID points at.
+
   - id: bar
     status: planned
     persona_path: null
