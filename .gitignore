@@ -47,3 +47,7 @@ node_modules/
 # Zadarma call recordings — real customer phone numbers in the filenames and
 # actual recorded conversations. This repo is public; these must never be pushed.
 /zadarma/
+
+# Mini CRM product marketing — ICP, messaging and ad copy. Competitive assets,
+# and this repo is public. Agents read local files the same as tracked ones.
+/mini-crm/

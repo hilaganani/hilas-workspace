@@ -116,6 +116,14 @@ Three things make it work, and each is a separate source of truth:
 
 Tamar also holds the road to **100,000 ₪/month** and surfaces when the mix itself needs to change — without declaring the target impossible. The known gap: 3 concurrent build projects yield ~20,000 ₪/month, not the 60,000 ₪ the plan assumes, and the hours are nearly full before them. Shelf products are the lever.
 
+### The mini CRM is the flagship shelf product — see `mini-crm/`
+
+The mini CRM (₪8,800, shelf) is the lever Tamar leans on, and its product and marketing material lives in **`mini-crm/`** (untracked — competitive assets, and this repo is public): `positioning.md` (what's in the package, the three-tier structure, the ICP and its explicit exclusions, differentiation, messaging), `funnel.md` (lead flow, screening-form questions, the WhatsApp and email copy, sales-call questions), and `ads.md` (five ads written in Hila's own words, plus collected competitor ads as reference). Transferred 27.8.2026 from the Google doc Hila built with **ריקי**; that doc is now archive and `mini-crm/` is the source of truth. The prices in it are **not current** — the Airtable `מוצרים` table remains the only price authority.
+
+The delivered system itself is the **`מיני CRM - תבנית מאסטר`** Airtable base (`appQ0KGPc5qhKJgFU`), record-free apart from demo data, with a published four-page interface the client works in instead of raw tables. Per-product delivery detail is in `tamar/product-details.md`.
+
+**One structural decision is still open:** the marketing doc describes three packages on an annual subscription; the catalog holds one product at a one-time price. Both cannot stand. See `mini-crm/positioning.md`.
+
 ## Setup
 
 ```bash
